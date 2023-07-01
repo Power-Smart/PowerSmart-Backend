@@ -4,7 +4,6 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 
 // Database & model imports
-import { Sequelize } from "sequelize";
 import db from "./models/index.js";
 
 // Route imports

@@ -10,7 +10,7 @@ export const testInsert = async (req, res) => {
     try {
         const user = await User.create(
             {
-                id: 1,
+                id: 2,
                 name: "alice123",
                 email: "hello",
                 password: "1234",
