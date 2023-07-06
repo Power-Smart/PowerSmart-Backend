@@ -5,6 +5,7 @@ const User = db.define("user", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING,
@@ -14,6 +15,10 @@ const User = db.define("user", {
     },
     password: {
         type: DataTypes.STRING,
+    },
+    refresh_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
 });
 

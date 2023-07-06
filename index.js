@@ -3,6 +3,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import passport from "passport";
+import cookieparser from "cookie-parser";
 import passportConfig from "./config/passport.config.js";
 
 // Database & model imports
@@ -19,15 +20,19 @@ passportConfig(passport);
 const app = Express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+    })
+);
 app.use(passport.initialize());
-
-// app.use(bodyParser.json({ type: "application/*+json" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieparser());
+// app.use(bodyParser.json({ type: "application/*+json" }));
 
 // Database connection
-db.authenticate()
+db.sync({ alter: true })
     .then(() => {
         console.log("\n>> Database connected ! <<\n");
     })
