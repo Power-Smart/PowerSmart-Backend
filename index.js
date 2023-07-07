@@ -22,14 +22,15 @@ const PORT = process.env.PORT || 3001;
 
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: "http://localhost:5173",
     })
 );
 app.use(passport.initialize());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieparser());
+app.use(Express.json());
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(bodyParser.json({ type: "application/*+json" }));
+app.use(cookieparser());
 
 // Database connection
 db.sync({ alter: true })

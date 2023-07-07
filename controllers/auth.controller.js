@@ -71,20 +71,13 @@ export const login = async (req, res) => {
                     expiresIn: "1d",
                 }
             );
-            User.update(
+            await User.update(
                 { refresh_token: refreshToken },
                 { where: { email: email } }
-            ); // need to handle exception here
-
-            res.cookie("refresh", refreshToken, {
-                // store refreshtoken in users cookies
-                httpOnly: true,
-                sameSite: "None",
-                secure: true,
-                maxAge: 24 * 60 * 60 * 1000,
-            });
-            res.json({
-                message: "Logged in successfully",
+            );
+            return res.json({
+                email: user.email,
+                name: user.name,
                 token,
                 refreshToken,
             });
