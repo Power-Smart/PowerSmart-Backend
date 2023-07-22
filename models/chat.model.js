@@ -1,4 +1,4 @@
-import db from "../models/index.js";
+import db from "../models/index.js";   
 import { DataTypes } from "sequelize";
 
 const Chat = db.define("chat", {

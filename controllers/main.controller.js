@@ -22,6 +22,6 @@ export const testInsert = async (req, res) => {
         res.send(user);
     } catch (err) {
         console.log(err);
-        res.send("eror insertion");
+        res.send("error insertion");
     }
 };
