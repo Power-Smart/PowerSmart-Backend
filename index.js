@@ -14,6 +14,8 @@ import mainRoute from "./routes/main.route.js";
 import authRoute from "./routes/auth.route.js";
 import protectedRoute from "./routes/protected.route.js";
 
+
+
 dotenv.config();
 passportConfig(passport);
 
@@ -31,6 +33,9 @@ app.use(Express.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(bodyParser.json({ type: "application/*+json" }));
 app.use(cookieparser());
+
+
+import './models/foreignKeys.js';
 
 // Database connection
 db.sync({ alter: true })
