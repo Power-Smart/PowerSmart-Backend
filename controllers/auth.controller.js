@@ -4,34 +4,34 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
 dotenv.config();
-export const users = [];
 
 export const register = async (req, res) => {
     try {
         const { email, password, name } = req.body;
 
-        User.findOne({ where: { email: email } }).then((user) => {
+        User.findOne({ where: { email: email } }).then(async (user) => {
             if (user) {
                 return res.status(400).json({ message: "User already exists" });
+            } else {
+                const hashedPassword = await bcrypt.hash(password, 10);
+
+                const newUser = await User.create({
+                    email: email,
+                    password: hashedPassword,
+                    name: name,
+                    role: 0,
+                });
+                await newUser.save();
+                res.status(201).json({
+                    message: "User created successfully",
+                    user: {
+                        email,
+                        name,
+                    },
+                });
             }
         });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = await User.create({
-            id: Math.floor(Math.random() * 100),
-            email: email,
-            password: hashedPassword,
-            name: name,
-        });
-        newUser.save();
-        // users.push(newUser);
-        res.status(201).json({
-            message: "User created successfully",
-            user: newUser,
-        });
     } catch (e) {
-        // console.log(e.message);
         res.status(500).send();
     }
 };

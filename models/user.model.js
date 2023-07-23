@@ -1,7 +1,6 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-
 const User = db.define("user", {
     user_id: {
         type: DataTypes.INTEGER,
@@ -13,6 +12,7 @@ const User = db.define("user", {
     },
     email: {
         type: DataTypes.STRING,
+        unique: true,
     },
     password: {
         type: DataTypes.STRING,
@@ -21,7 +21,13 @@ const User = db.define("user", {
         type: DataTypes.STRING,
         allowNull: true,
     },
+    role: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        validate: {
+            isIn: [[0, 1, 2, 3, 4]],
+        },
+    },
 });
-
 
 export default User;
