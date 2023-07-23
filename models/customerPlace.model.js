@@ -14,7 +14,6 @@ const CustomerPlace = db.define("customer_place", {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
-
 });
 
 export default CustomerPlace;
