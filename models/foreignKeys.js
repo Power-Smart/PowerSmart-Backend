@@ -9,7 +9,7 @@ import Schedule from "./schedule.model.js";
 import Feedback from "./feedback.model.js";
 import Device from "./device.model.js";
 import DeviceSchedule from "./deviceSchedule.model.js";
-import Achievement from "./achievement.model.js";
+// import Achievement from "./achievement.model.js";
 import CustomerPlace from "./customerPlace.model.js";
 import Place from "./place.model.js";
 import Room from "./room.model.js";
@@ -23,7 +23,18 @@ import Item from "./item.model.js";
 import StockManager from "./stockManager.model.js";
 import Order from "./order.model.js";
 import Payment from "./payment.model.js";
+import InformUsage from "./informUsage.model.js";
 
+
+
+// Define the association between the InformUsage and Customer models
+InformUsage.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+Customer.hasOne(InformUsage, { foreignKey: 'customer_id', as: 'informUsage' });
+
+
+// Define the association between the InformUsage and GuestUser models
+InformUsage.belongsTo(GuestUser, { foreignKey: 'guest_id', as: 'guestUser' });
+GuestUser.hasOne(InformUsage, { foreignKey: 'guest_id', as: 'informUsage' });
 
 
 

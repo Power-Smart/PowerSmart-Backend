@@ -1,7 +1,7 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const CustomerPlace = db.define("customerPlace", {
+const CustomerPlace = db.define("customer_place", {
     place_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -12,7 +12,7 @@ const CustomerPlace = db.define("customerPlace", {
     },
     is_owner: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
     },
 
 });

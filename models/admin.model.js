@@ -5,6 +5,7 @@ const Admin = db.define("admin", {
     admin_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true,
     },
     tel_no: {
         type: DataTypes.ARRAY(DataTypes.STRING),

@@ -1,7 +1,7 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const SensorUnit = db.define("sensorUnit", {
+const SensorUnit = db.define("sensor_unit", {
     sensor_unit_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

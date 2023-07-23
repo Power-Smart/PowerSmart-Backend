@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
-import Customer from "../models/customer.model.js";
+
+
 
 export const getRoot = async (req, res) => {
     res.send(

@@ -2,7 +2,7 @@ import db from './index.js';
 import { DataTypes } from 'sequelize';
 
 
-const StockManager = db.define('stockManager', {
+const StockManager = db.define('stock_manager', {
     stock_manager_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

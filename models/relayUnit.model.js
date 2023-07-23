@@ -1,7 +1,7 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const RelayUnit = db.define("relayUnit", {
+const RelayUnit = db.define("relay_unit", {
     relay_unit_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

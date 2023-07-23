@@ -2,17 +2,20 @@ import db from "./index.js";
 import { DataTypes } from "sequelize";
 
 const DeviceSchedule = db.define("device_schedule", {
-    schedule_id: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    switch_status: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+    device_id: {
+        type: DataTypes.INTEGER,
     },
     schedule_id: {
         type: DataTypes.INTEGER,
+    },
+    switch_status: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
 
 });
