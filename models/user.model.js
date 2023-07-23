@@ -23,9 +23,9 @@ const User = db.define("user", {
     },
     role: {
         type: DataTypes.INTEGER,
-        defaultValue: 0,
+        defaultValue: 1,
         validate: {
-            isIn: [[0, 1, 2, 3, 4]],
+            isIn: [[1, 2, 3, 4, 5]],
         },
     },
 });

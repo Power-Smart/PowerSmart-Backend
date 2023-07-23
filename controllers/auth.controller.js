@@ -19,7 +19,7 @@ export const register = async (req, res) => {
                     email: email,
                     password: hashedPassword,
                     name: name,
-                    role: 0,
+                    role: 1,
                 });
                 await newUser.save();
                 res.status(201).json({
@@ -41,7 +41,7 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         User.findOne({
             where: { email: email },
-            attributes: ["email", "password"],
+            attributes: ["name", "email", "password", "role"],
         }).then(async (user) => {
             if (!user) {
                 return res
@@ -76,6 +76,7 @@ export const login = async (req, res) => {
                 { where: { email: email } }
             );
             return res.json({
+                role: user.role,
                 email: user.email,
                 name: user.name,
                 token,
