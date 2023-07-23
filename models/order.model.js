@@ -12,6 +12,10 @@ const Order = db.define("order", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    payment_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 
 });
 
