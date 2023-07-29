@@ -1,4 +1,5 @@
 import sensor_data from "../models/sensor_data.model.js";
+import device from "../models/device.model.js";
 import model_predictions from "../models/model_prediction.model.js";
 import sensor_unit from "../models/sensor_unit.model.js";
 import device_switching from "../models/device_switching.model.js";
@@ -7,7 +8,12 @@ import place from "./models/place.model.js"
 import schedule from "./models/schedule.model.js"
 import axios from axios
 
-var _ = require('lodash');
+import _ from 'lodash'
+import sequelize from "sequelize";
+
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export const handleSensorData = async (req, res) => {
     try{
@@ -59,49 +65,55 @@ export const handleSensorData = async (req, res) => {
 
             newModelPredictions.save();
 
-            const thisRoom = await room.findAll({
+            const thisRoom = await room.findOne({
                 where: {room_id: roomId}
             });
+
+            // const thisRoom = thisRoomResponse.room_id;
 
             if(_.isEmpty(thisRoom)){
                 throw new Error("No Room found");
             }
 
-            const thisPlace = await place.findAll({
+            const thisPlace = await place.findOne({
                 where: {place_id: thisRoom.place_id}
             })
-            
-            const currentDeviceSwitching = await device_switching.findAll({
-                where: {
-                    room_id: roomId,
-                    status: 'active'
-                }
-            });
 
-            const devicesInRoom = await device_switching.findAll({
+            const devicesInRoom = await device.findAll({
                 where: {
                     room_id: roomId,
                     is_active: 'active'
                 }
             });
 
-            var schedules;
+            const devicesIdsInnRoom = await Promise.all(devicesInRoom.data.map(async (element)=>{
+                return element.device_id;
+            }));
+            
+            const currentDeviceSwitching = await device_switching.findAll({
+                where: {
+                    device_id: devicesIdsInnRoom,
+                    status: 'active'
+                }
+            });
+
+
+            var schedules = [];
 
             try {
-                // Define the forEach callback function as async
+               
                 await Promise.all(currentDeviceSwitching.data.map(async (element) => {
                     if(element.whichSchedule !== null){
-                         const schedulesActive = await schedule.findAll({
+                          schedules.push(await schedule.findOne({
                             where: {
                                 schedule_id: element.wchich_schedule,
                             }
-                            });
-                        schedules = schedulesActive;
+                            }));
                     }
 
                 }));
                 } catch (error) {
-                // Handle any errors that occur during the await calls
+           
                 throw new Error("Error while processing elements: " + error.message);
                 }
 
@@ -112,7 +124,7 @@ export const handleSensorData = async (req, res) => {
                 roomDetails: JSON.stringify(thisRoom),
                 placeDetails: JSON.stringify(thisPlace),
                 currentSwitchingDetails: JSON.stringify(currentDeviceSwitching),
-                scheduleDetails: JSON.stringify(schedules),
+                scheduleDetails: JSON.stringify(_.uniq(schedules)),
                 deviceDetails: JSON.stringify(devicesInRoom)
             };
 
@@ -130,13 +142,13 @@ export const handleSensorData = async (req, res) => {
                     });
                     
                     if(_.isEmpty(deviceToSwitch)){
-                        throw new Error("Hknw dla");
+                        throw new Error("No devices found.");
                     }
 
                     try{
                         await Promise.all(deviceToSwitch.data.map(async (element)=>{
                             const deviceSwitchChangeResults = await device_switching.update({
-                               status: 'inactive'
+                               status: 'inactive_pending'
                             },
                             {
                                 where: {
@@ -150,7 +162,7 @@ export const handleSensorData = async (req, res) => {
                             }
                         }));
                     }catch(error){
-                        throw new Error("wtf happening"+ error.message);
+                        throw new Error("Something happened"+ error.message);
                     }
 
                 }));
@@ -166,6 +178,7 @@ export const handleSensorData = async (req, res) => {
                             switch_status: element.switch_status,
                             activity: 'prediction',
                             wchich_schedule: null,
+                            status: 'active_pending',
                             changed_at: new Date()
                         }
 
@@ -175,12 +188,110 @@ export const handleSensorData = async (req, res) => {
 
                     }));
 
-                    const wsServerResponse = axios.post('/wsserver/checkThisOut', {
-                        roomId: roomId,
-                    });
+                    const [relaySocketDeviceSwithResults, metadata] = await sequelize.query(`SELECT device_switching.device_id, device_switching.switch_status, device.relay_id, device.socket FROM 'device_switching' WHERE room_id=${roomId} AND activity='prediction' AND status='active_pending' INNER JOIN device ON device_switching device_switching.device_id = device.device_id`);
 
+                    let wsServerData = {};
+
+                    try{
+
+                        await Promise.all(relaySocketDeviceSwithResults.data.map(async (element)=>{
+                            
+                            if(!wsServerData.hasOwnProperty(element.realy_id)){
+                                wsServerData[element.realy_id] = {};
+                            }
+
+                            wsServerData[element.realy_id][element.socket] = element.switch_status;
+    
+                        }));
+
+                    }catch(error){
+                        throw new Error("Internal processing error"+ error.message);
+                    }
+
+                    let count = 0;
+                    
+
+                    async ()=> {
+                        while (count < 10) {
+                          try {
+                            const wsServerResponse = await axios.post('/wsserver/checkThisOut', wsServerData);
+                      
+                            if (wsServerResponse.status >= 200 && wsServerResponse.status < 300) {
+
+                                try{
+                                    const deviceSwitchChangeResultsAfterSwitchingActive = await device_switching.update(
+
+                                        { status: 'inactive' },
+                                        { where: { 
+                                            device_id: devicesIdsInnRoom,
+                                            status: 'inactive_pending' 
+                                            } 
+                                        }
+                                    );
+
+                                    const deviceSwitchChangeResultsAfterSwitchingInactive = await device_switching.update(
+
+                                        { status: 'active' },
+                                        { where: { 
+                                            device_id: devicesIdsInnRoom,
+                                            status: 'active_pending' 
+                                            } 
+                                        }
+                                    );
+                                    
+                                    throw new Error("Operation Successful");
+
+                                }catch(error){
+                                    throw new Error(error.message);
+                                }                               
+                                
+                            } else{
+
+                              count++;
+                              
+                              async ()=> {
+                                await delay(500);
+
+                              }
+
+                            }
+
+                          } catch (error) {
+                            throw new Error(error.message);
+                          }
+                        }
+                      }
+
+                      try{
+                        const deviceSwitchChangeResultsAfterInternalErrorActive = await device_switching.update(
+
+                            { status: 'active' },
+                            { where: { 
+                                device_id: devicesIdsInnRoom,
+                                status: 'inactive_pending' 
+                                } 
+                            }
+                        );
+
+                        const deviceSwitchDeleteResultsAfterInternalError = await device_switching.delete(
+
+                            { where: { 
+                                device_id: devicesIdsInnRoom,
+                                status: 'active_pending' 
+                                } 
+                            }
+                        );
+
+                        throw new Error("Switching Aborted due to internal error");
+
+                    }catch(error){
+                        throw new Error(error.message);
+                    }      
+                    
+                    
+                    
                 }catch(error){
-                    throw new Error("Error :-) "+error.message);
+                    throw new Error(error.message);
                 }
             } else {
                 throw new Error("Decision Invalid");
@@ -191,7 +302,13 @@ export const handleSensorData = async (req, res) => {
         }      
 
 
-    } catch (e) {
-        res.status(500).send();
+    } catch (error) {
+        if(error.message === "Operation Successful"){
+            res.status(200).send(error.message);
+
+        }else{
+            res.status(500).send(error.message);
+            
+        }
     }
 }
