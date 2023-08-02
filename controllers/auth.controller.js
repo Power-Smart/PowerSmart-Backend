@@ -41,7 +41,7 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         User.findOne({
             where: { email: email },
-            attributes: ["name", "email", "password", "role"],
+            attributes: ["user_id", "name", "email", "password", "role"],
         }).then(async (user) => {
             if (!user) {
                 return res
@@ -81,6 +81,7 @@ export const login = async (req, res) => {
                 { where: { email: email } }
             );
             return res.json({
+                id: user.user_id,
                 role: user.role,
                 email: user.email,
                 name: user.name,
