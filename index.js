@@ -10,9 +10,7 @@ import passportConfig from "./config/passport.config.js";
 import db from "./models/index.js";
 
 // Route imports
-import mainRoute from "./routes/main.route.js";
-import authRoute from "./routes/auth.route.js";
-import userRoute from "./routes/user.route.js";
+import routes from "./routes/index.js";
 import protectedRoute from "./routes/protected.route.js";
 
 dotenv.config();
@@ -35,6 +33,7 @@ app.use(Express.json());
 app.use(cookieparser());
 
 import "./models/foreignKeys.js";
+import router from "./routes/auth.route.js";
 
 // Database connection
 db.sync({ alter: true })
@@ -46,10 +45,7 @@ db.sync({ alter: true })
     });
 
 // Routes tree setup
-app.use("/", mainRoute);
-app.use("/auth", authRoute);
-app.use("/user", userRoute);
-
+app.use("/", routes);
 app.use(
     "/protected",
     passport.authenticate("jwt", { session: false }),
