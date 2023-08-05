@@ -13,11 +13,14 @@ const Place = db.define("place", {
     location: {
         type: DataTypes.STRING,
     },
+    postal_Code: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
-
 });
 
 export default Place;
