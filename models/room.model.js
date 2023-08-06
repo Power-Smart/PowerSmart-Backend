@@ -27,7 +27,9 @@ const Room = db.define("room", {
     place_id: {
         type: DataTypes.INTEGER,
     },
-
+    customer_id:{
+        type:DataTypes.INTEGER,
+    }
 });
 
 export default Room;
