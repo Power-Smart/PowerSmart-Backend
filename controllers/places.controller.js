@@ -45,10 +45,11 @@ export const getPlace = async (req, res) => {
 };
 
 export const addPlace = async (req, res) => {
-    const { id, name, location } = req.body;
+    const { id, name, location, postal_code } = req.body;
     try {
         const place = new Place({
             name,
+            postal_code,
             location,
             is_active: false,
         });
