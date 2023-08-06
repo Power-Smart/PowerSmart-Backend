@@ -16,7 +16,7 @@ export const updateCustomerProfile = async (req, res) => {
     const { name, tel_no, address } = req.body;
     try {
         const customer = await Customer.findByPk(id);
-        customer.tel_no = [tel_no.split(",")];
+        customer.tel_no = tel_no;
         customer.address = address;
         await customer.save();
         const user = await User.findByPk(id);
