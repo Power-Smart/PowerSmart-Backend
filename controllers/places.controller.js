@@ -54,12 +54,14 @@ export const addPlace = async (req, res) => {
             is_active: false,
         });
         await place.save();
+
         const customerPlace = new CustomerPlace({
             customer_id: id,
             place_id: place.place_id,
             is_owner: true,
         });
         await customerPlace.save();
+        
         res.status(201).send(place);
     } catch (err) {
         console.log(err);

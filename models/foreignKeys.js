@@ -86,8 +86,8 @@ Sensor.hasOne(SensorUnit, { foreignKey: 'sensor_id', as: 'sensorUnit' });
 
 
 // Define the association between the SensorUnit and Room models
-Room.belongsTo(SensorUnit, { foreignKey: 'sensor_unit_id', as: 'sensorUnit' });
-SensorUnit.hasOne(Room, { foreignKey: 'sensor_unit_id', as: 'room' });
+// Room.belongsTo(SensorUnit, { foreignKey: 'sensor_unit_id', as: 'sensorUnit' });
+// SensorUnit.hasOne(Room, { foreignKey: 'sensor_unit_id', as: 'room' });
 
 
 // Define the association between the RelayUnit and Place models
@@ -101,7 +101,8 @@ Place.hasOne(RelayUnit, { foreignKey: 'place_id', as: 'relayUnit' });
 Room.belongsTo(Place, { foreignKey: 'place_id', as: 'place' });
 Place.hasOne(Room, { foreignKey: 'place_id', as: 'room' });
 
-
+Room.belongsTo(Customer,{foreignKey:'customer_id', as:'customer'});
+Customer.hasMany(Room,{foreignKey:'customer_id', as:'room'});
 
 
 // Define the association between the Customer_Place and Place models
