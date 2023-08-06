@@ -10,7 +10,7 @@ import passportConfig from "./config/passport.config.js";
 import db from "./models/index.js";
 
 // Route imports
-import routes from "./routes/index.js";
+import routes from "./routes/routes.js";
 import protectedRoute from "./routes/protected.route.js";
 
 dotenv.config();
