@@ -5,6 +5,9 @@ export const getRooms = async (req, res) => {
     const customerID = req.params.customerID;
     const placeID = req.params.placeID;
 
+    console.log("Customer ID: " + customerID);
+    console.log("Place ID: " + placeID);
+
     try {
         const customerRooms = await Room.findAll({
             where: {
@@ -22,7 +25,9 @@ export const getRooms = async (req, res) => {
 
 
 export const addRoom = async (req, res) => {
-    const { window_type, is_active, size, type, place_id, customer_id,name} = req.body;
+    const { window_type, is_active, size, type, placeID, id,name} = req.body;
+
+    console.log(req.body);
 
     try {
         const room = await Room.create({
@@ -30,8 +35,8 @@ export const addRoom = async (req, res) => {
             is_active: true,
             size: size,
             type: type,
-            place_id: place_id,
-            customer_id: customer_id,
+            place_id: placeID,
+            customer_id: id,
             name: name
         });
         res.status(201).send(room);
