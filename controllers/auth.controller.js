@@ -27,6 +27,7 @@ export const register = async (req, res) => {
                     user: {
                         email,
                         name,
+                        user_id:newUser.dataValues.user_id
                     },
                 });
             }
