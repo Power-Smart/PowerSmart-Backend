@@ -11,6 +11,28 @@ export const getUser = async (req, res) => {
     }
 };
 
+
+export const completeCustomerProfile = async (req, res) => {
+    const { firstName, lastName, address, user_id } = req.body;
+
+    console.log(req.body);
+
+    try {
+        const customer = await Customer.create({
+            user_id: user_id,
+            first_name: firstName,
+            last_name: lastName,
+            address: address
+        });
+        res.status(201).send(customer);
+        console.log("Customer Profile Complete Successfully.");
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error Profile Complete.");
+    }
+}
+
+
 export const updateCustomerProfile = async (req, res) => {
     const id = req.params.id;
     const { name, tel_no, address } = req.body;
@@ -30,7 +52,29 @@ export const updateCustomerProfile = async (req, res) => {
 };
 
 export const saveProfile = async (req, res) => {
-    // console.log(req.params.id);
-    // console.log(req.file);
-    res.status(200).send();
+    console.log(req.file)
+
+    try{
+        await Customer.update({profile_pic:`customer/${req.file.originalname}`},{
+            where:{
+                user_id:17
+            }
+        })
+        res.status(200).send("Insert Profile into db");
+    }catch(error){
+        console.log(error);
+    }
 };
+
+export const deleteProfile = async (req,res) => {
+    try{
+        await Customer.update({profile_pic:null},{
+            where:{
+                user_id:17
+            }
+        })
+        res.status(200).send("Remove the profile picture");
+    }catch(error){
+        console.log(error);
+    }
+}
