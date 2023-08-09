@@ -45,14 +45,14 @@ export const handleSensorData = async (req, res) => {
 
         if (modelPredictions.status >= 200 && modelPredictions.status < 300) {
 
-            const {sensor_id, occupancy_rate, room_status, sent_time} = modelPredictions.data;
+            const {occupancy_rate, room_status, sent_time} = modelPredictions.data;
 
-            const roomId = await sensor_unit.findAll({
+            const roomId = await sensor_unit.findOne({                                                  //Can done via same query (1)
                 attributes: ['room_id'],
                 where: {sensor_id: sensorId} 
             });
 
-            const sensorStatus = await sensor_unit.findAll({
+            const sensorStatus = await sensor_unit.findOne({
                 attributes: ['status'],
                 where: {sensor_id: sensorId} 
             });
@@ -74,7 +74,7 @@ export const handleSensorData = async (req, res) => {
 
             newModelPredictions.save();
 
-            const thisRoom = await room.findOne({
+            const thisRoom = await room.findOne({                                               //Can done via same query (1)
                 where: {room_id: roomId}
             });
 
@@ -95,7 +95,7 @@ export const handleSensorData = async (req, res) => {
                 }
             });
 
-            const devicesIdsInnRoom = await Promise.all(devicesInRoom.data.map(async (element)=>{
+            const devicesIdsInnRoom = await Promise.all(devicesInRoom.map(async (element)=>{
                 return element.device_id;
             }));
             
@@ -107,16 +107,16 @@ export const handleSensorData = async (req, res) => {
             });
 
 
-            var schedules = [];
+            let schedules = [];
 
             try {
                
-                await Promise.all(currentDeviceSwitching.data.map(async (element) => {
+                await Promise.all(currentDeviceSwitching.map(async (element) => {
                     if(element.whichSchedule !== null){
                           schedules.push(await schedule.findOne({
                             where: {
                                 schedule_id: element.wchich_schedule,
-                            }
+                                }
                             }));
                     }
 
@@ -167,17 +167,17 @@ export const handleSensorData = async (req, res) => {
                             });
 
                             if(_.isEmpty(deviceSwitchChangeResults)){
-                                throw new Error("Error while updating switching scheme"+ error.message);
+                                throw new Error("Error while updating switching scheme");
                             }
                         }));
                     }catch(error){
-                        throw new Error("Something happened"+ error.message);
+                        throw new Error(error.message);
                     }
 
                 }));
                 } catch (error) {
                 // Handle any errors that occur during the await calls
-                throw new Error("Error while processing elements: " + error.message);
+                throw new Error(error.message);
                 }
 
                 try{
@@ -266,7 +266,7 @@ export const handleSensorData = async (req, res) => {
 
                                 doneRelays.push(wsServerData.data[foundRelays]);
 
-                                if(fillCount < 3){
+                                if(fillCount <= 3){
                                     
 
                                     try{
@@ -325,9 +325,9 @@ export const handleSensorData = async (req, res) => {
                                             await delay(500);            
                                         }
 
-                                        const constForReturnVal = await sendToWs(wsServerResponse.data[notFoundRelays],3); 
-
                                         fillCount++;
+
+                                        const constForReturnVal = await sendToWs(wsServerResponse.data[notFoundRelays],3); 
     
                                     }catch(error){
                                         throw new Error(error.message);
@@ -445,3 +445,25 @@ export const handleSensorData = async (req, res) => {
     }
 }
 
+
+/*
+{
+    2578:{
+        0: true
+        1: true
+        .
+        .
+        .
+        .
+        .
+        .
+        7: false
+    },
+    3534: {
+
+    },
+    1243: {
+
+    }
+}
+*/ 

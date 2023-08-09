@@ -24,6 +24,9 @@ import StockManager from "./stockManager.model.js";
 import Order from "./order.model.js";
 import Payment from "./payment.model.js";
 import InformUsage from "./informUsage.model.js";
+import SensorData from "./sensorData.model.js";
+import ModelPrediction from "./modelPrediction.model.js";
+import DeviceSwitching from "./deviceSwitching.model.js";
 
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
@@ -167,3 +170,15 @@ RelayUnit.hasMany(Device, { foreignKey: "relay_unit_id", as: "devices" });
 
 Schedule.belongsTo(Place, { foreignKey: "place_id", as: "place" });
 Place.hasMany(Schedule, { foreignKey: "place_id", as: "schedules" });
+
+SensorData.belongsTo(SensorUnit, { foreignKey: "sensor_unit_id", as: "sensorUnit"});
+SensorUnit.hasMany(SensorData, { foreignKey: "sensor_unit_id", as: "sensorData"});
+
+ModelPrediction.belongsTo(Room, {foreignKey: "room_id", as: "room"});
+Room.hasMany(ModelPrediction, {foreignKey: "room_id", as: "modePrediction"});
+
+DeviceSwitching.belongsTo(Device, {foreignKey: "device_id", as: "device"});
+Device.hasMany(DeviceSwitching, {foreignKey: "room_id", as: "deviceSwitching"});
+
+DeviceSwitching.belongsTo(Schedule, {foreignKey: "schedule_id", as: "schedue"});
+Schedule.hasMany(DeviceSwitching, {foreignKey: "which_shedule", as: "deviceSwitching"});
