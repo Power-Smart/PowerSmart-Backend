@@ -10,6 +10,9 @@ const RelayUnit = db.define("relay_unit", {
     name: {
         type: DataTypes.STRING,
     },
+    description: {
+        type: DataTypes.TEXT,
+    },
     category: {
         type: DataTypes.STRING,
     },
@@ -19,7 +22,6 @@ const RelayUnit = db.define("relay_unit", {
     place_id: {
         type: DataTypes.INTEGER,
     },
-
 });
 
 export default RelayUnit;

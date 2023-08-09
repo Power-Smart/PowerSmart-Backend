@@ -1,4 +1,4 @@
-import db from "./index.js";   
+import db from "./index.js";
 import { DataTypes } from "sequelize";
 
 const DeviceSchedule = db.define("device_schedule", {
@@ -15,9 +15,8 @@ const DeviceSchedule = db.define("device_schedule", {
     },
     switch_status: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
     },
-
 });
 
 export default DeviceSchedule;
