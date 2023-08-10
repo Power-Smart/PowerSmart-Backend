@@ -7,7 +7,7 @@ dotenv.config();
 
 export const register = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, first_name, last_name } = req.body;
 
         User.findOne({ where: { email: email } }).then(async (user) => {
             if (user) {
@@ -18,7 +18,8 @@ export const register = async (req, res) => {
                 const newUser = await User.create({
                     email: email,
                     password: hashedPassword,
-                    name: name,
+                    first_name: first_name,
+                    last_name: last_name,
                     role: 1,
                 });
                 await newUser.save();
@@ -26,8 +27,9 @@ export const register = async (req, res) => {
                     message: "User created successfully",
                     user: {
                         email,
-                        name,
-                        user_id:newUser.dataValues.user_id
+                        first_name,
+                        last_name,
+                        user_id: newUser.dataValues.user_id,
                     },
                 });
             }
@@ -42,7 +44,14 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         User.findOne({
             where: { email: email },
-            attributes: ["user_id", "name", "email", "password", "role"],
+            attributes: [
+                "user_id",
+                "first_name",
+                "last_name",
+                "email",
+                "password",
+                "role",
+            ],
         }).then(async (user) => {
             if (!user) {
                 return res
@@ -62,7 +71,8 @@ export const login = async (req, res) => {
                 {
                     email: user.email,
                     id: user.user_id,
-                    name: user.name,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
                     role: user.role,
                 },
                 process.env.ACCESS_TOKEN_SECRET,
@@ -85,7 +95,8 @@ export const login = async (req, res) => {
                 id: user.user_id,
                 role: user.role,
                 email: user.email,
-                name: user.name,
+                first_name: user.first_name,
+                last_name: user.last_name,
                 token,
                 refreshToken,
             });
