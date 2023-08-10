@@ -1,19 +1,17 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-
 const Customer = db.define("customer", {
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
     },
-    first_name: {
-        type: DataTypes.STRING,
+    points: {
+        type: DataTypes.INTEGER,
         allowNull: true,
     },
-    last_name: {
-        type: DataTypes.STRING,
+    year_subscription: {
+        type: DataTypes.DATE,
         allowNull: true,
     },
     tel_no: {
@@ -31,15 +29,6 @@ const Customer = db.define("customer", {
     },
     profile_pic: {
         type: DataTypes.STRING,
-        allowNull: true,
-    },
-    points: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    year_subscription: {
-        type: DataTypes.DATE,
-        allowNull: true,
     },
     achievements: {
         type: DataTypes.ARRAY(DataTypes.STRING),

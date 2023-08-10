@@ -15,7 +15,9 @@ const InformUsage = db.define("inform_usage", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    
+    room_id: {
+        type: DataTypes.INTEGER,
+    },
 });
 
 export default InformUsage;

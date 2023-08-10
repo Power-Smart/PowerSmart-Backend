@@ -73,6 +73,7 @@ export const updatePlace = async (req, res) => {
     const { placeID } = req.params;
     const { name, location } = req.body;
 
+
     try {
         await Place.update(
             {

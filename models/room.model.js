@@ -30,7 +30,7 @@ const Room = db.define("room", {
     place_id: {
         type: DataTypes.INTEGER,
     },
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
     },
 });
