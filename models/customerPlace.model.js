@@ -10,9 +10,9 @@ const CustomerPlace = db.define("customer_place", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    is_owner: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
+    access_level: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
 });
 

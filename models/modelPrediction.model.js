@@ -1,16 +1,16 @@
 import db from "./index.js";
 import { DataTypes } from "sequelize";
 
-const ModelPrediction = db.define("model_predictions", {
+const ModelPrediction = db.define("model_prediction", {
     room_id: {
         type: DataTypes.INTEGER,
     },
     occupancy_rate: {
-        type: DataTypes.VARCHAR,
+        type: DataTypes.STRING,
     },
     room_status: {
-        type: DataTypes.VARCHAR,
-    }
+        type: DataTypes.STRING,
+    },
 });
 
 export default ModelPrediction;

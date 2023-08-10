@@ -15,8 +15,6 @@ import Place from "./place.model.js";
 import Room from "./room.model.js";
 import RelayUnit from "./relayUnit.model.js";
 import SensorUnit from "./sensorUnit.model.js";
-import Sensor from "./sensor.model.js";
-import Relay from "./relay.model.js";
 import Supplier from "./supplier.model.js";
 import Supply from "./supply.model.js";
 import Item from "./item.model.js";
@@ -72,14 +70,6 @@ User.hasOne(StockManager, {
 // Define the association between the Supply and Supplier models
 Supply.belongsTo(Supplier, { foreignKey: "supplier_id", as: "supplier" });
 Supplier.hasOne(Supply, { foreignKey: "supplier_id", as: "supply" });
-
-// Define the association between the Relay and RelayUnit models
-RelayUnit.belongsTo(Relay, { foreignKey: "relay_id", as: "relay" });
-Relay.hasOne(RelayUnit, { foreignKey: "relay_id", as: "relayUnit" });
-
-// Define the association between the Sensor and SensorUnit models
-SensorUnit.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" });
-Sensor.hasOne(SensorUnit, { foreignKey: "sensor_id", as: "sensorUnit" });
 
 // Define the association between the SensorUnit and Room models
 // Room.belongsTo(SensorUnit, { foreignKey: 'sensor_unit_id', as: 'sensorUnit' });
@@ -171,14 +161,29 @@ RelayUnit.hasMany(Device, { foreignKey: "relay_unit_id", as: "devices" });
 Schedule.belongsTo(Place, { foreignKey: "place_id", as: "place" });
 Place.hasMany(Schedule, { foreignKey: "place_id", as: "schedules" });
 
-SensorData.belongsTo(SensorUnit, { foreignKey: "sensor_unit_id", as: "sensorUnit"});
-SensorUnit.hasMany(SensorData, { foreignKey: "sensor_unit_id", as: "sensorData"});
+SensorData.belongsTo(SensorUnit, {
+    foreignKey: "sensor_unit_id",
+    as: "sensorUnit",
+});
+SensorUnit.hasMany(SensorData, {
+    foreignKey: "sensor_unit_id",
+    as: "sensorData",
+});
 
-ModelPrediction.belongsTo(Room, {foreignKey: "room_id", as: "room"});
-Room.hasMany(ModelPrediction, {foreignKey: "room_id", as: "modePrediction"});
+ModelPrediction.belongsTo(Room, { foreignKey: "room_id", as: "room" });
+Room.hasMany(ModelPrediction, { foreignKey: "room_id", as: "modelPrediction" });
 
-DeviceSwitching.belongsTo(Device, {foreignKey: "device_id", as: "device"});
-Device.hasMany(DeviceSwitching, {foreignKey: "room_id", as: "deviceSwitching"});
+DeviceSwitching.belongsTo(Device, { foreignKey: "device_id", as: "device" });
+Device.hasMany(DeviceSwitching, {
+    foreignKey: "room_id",
+    as: "deviceSwitching",
+});
 
-DeviceSwitching.belongsTo(Schedule, {foreignKey: "schedule_id", as: "schedue"});
-Schedule.hasMany(DeviceSwitching, {foreignKey: "which_shedule", as: "deviceSwitching"});
+DeviceSwitching.belongsTo(Schedule, {
+    foreignKey: "schedule_id",
+    as: "schedue",
+});
+Schedule.hasMany(DeviceSwitching, {
+    foreignKey: "which_shedule",
+    as: "deviceSwitching",
+});
