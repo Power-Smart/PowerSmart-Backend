@@ -39,7 +39,7 @@ const Schedule = db.define("schedule", {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
     },
     place_id: {

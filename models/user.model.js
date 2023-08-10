@@ -28,10 +28,6 @@ const User = db.define("user", {
             isIn: [[1, 2, 3, 4, 5]],
         },
     },
-    // online_status:{
-    //     type: DataTypes.BOOLEAN,
-    //     defaultValue: false,
-    // }
 });
 
 export default User;

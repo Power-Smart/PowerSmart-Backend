@@ -2,7 +2,7 @@ import db from "./index.js";
 import { DataTypes } from "sequelize";
 
 const TechSupport = db.define("tech_support", {
-    tech_support_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
     },

@@ -6,7 +6,7 @@ const CustomerPlace = db.define("customer_place", {
         type: DataTypes.INTEGER,
         primaryKey: true,
     },
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
