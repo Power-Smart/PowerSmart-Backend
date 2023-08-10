@@ -6,12 +6,12 @@ const Customer = db.define("customer", {
         type: DataTypes.INTEGER,
         primaryKey: true,
     },
-    first_name: {
-        type: DataTypes.STRING,
+    points: {
+        type: DataTypes.INTEGER,
         allowNull: true,
     },
-    last_name: {
-        type: DataTypes.STRING,
+    year_subscription: {
+        type: DataTypes.DATE,
         allowNull: true,
     },
     tel_no: {
@@ -29,15 +29,6 @@ const Customer = db.define("customer", {
     },
     profile_pic: {
         type: DataTypes.STRING,
-        allowNull: true,
-    },
-    points: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    year_subscription: {
-        type: DataTypes.DATE,
-        allowNull: true,
     },
     achievements: {
         type: DataTypes.ARRAY(DataTypes.STRING),
