@@ -4,34 +4,37 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
 dotenv.config();
-export const users = [];
 
 export const register = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, first_name, last_name } = req.body;
 
-        User.findOne({ where: { email: email } }).then((user) => {
+        User.findOne({ where: { email: email } }).then(async (user) => {
             if (user) {
                 return res.status(400).json({ message: "User already exists" });
+            } else {
+                const hashedPassword = await bcrypt.hash(password, 10);
+
+                const newUser = await User.create({
+                    email: email,
+                    password: hashedPassword,
+                    first_name: first_name,
+                    last_name: last_name,
+                    role: 1,
+                });
+                await newUser.save();
+                res.status(201).json({
+                    message: "User created successfully",
+                    user: {
+                        email,
+                        first_name,
+                        last_name,
+                        user_id: newUser.dataValues.user_id,
+                    },
+                });
             }
         });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = await User.create({
-            id: Math.floor(Math.random() * 100),
-            email: email,
-            password: hashedPassword,
-            name: name,
-        });
-        newUser.save();
-        // users.push(newUser);
-        res.status(201).json({
-            message: "User created successfully",
-            user: newUser,
-        });
     } catch (e) {
-        // console.log(e.message);
         res.status(500).send();
     }
 };
@@ -41,7 +44,14 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         User.findOne({
             where: { email: email },
-            attributes: ["email", "password"],
+            attributes: [
+                "user_id",
+                "first_name",
+                "last_name",
+                "email",
+                "password",
+                "role",
+            ],
         }).then(async (user) => {
             if (!user) {
                 return res
@@ -58,7 +68,13 @@ export const login = async (req, res) => {
             }
 
             const token = jwt.sign(
-                { email: user.email },
+                {
+                    email: user.email,
+                    id: user.user_id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    role: user.role,
+                },
                 process.env.ACCESS_TOKEN_SECRET,
                 {
                     expiresIn: "1h",
@@ -76,8 +92,11 @@ export const login = async (req, res) => {
                 { where: { email: email } }
             );
             return res.json({
+                id: user.user_id,
+                role: user.role,
                 email: user.email,
-                name: user.name,
+                first_name: user.first_name,
+                last_name: user.last_name,
                 token,
                 refreshToken,
             });

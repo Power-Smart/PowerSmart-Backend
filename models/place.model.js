@@ -1,36 +1,38 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const User = db.define("user", {
-    user_id: {
+const Place = db.define("place", {
+    place_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    first_name: {
+    name: {
         type: DataTypes.STRING,
     },
-    last_name: {
+    address: {
         type: DataTypes.STRING,
     },
-    email: {
-        type: DataTypes.STRING,
-        unique: true,
-    },
-    password: {
+    city: {
         type: DataTypes.STRING,
     },
-    refresh_token: {
+    country: {
         type: DataTypes.STRING,
+    },
+    postal_code: {
+        type: DataTypes.INTEGER,
         allowNull: true,
     },
-    role: {
+    time_zone: {
         type: DataTypes.INTEGER,
-        defaultValue: 1,
-        validate: {
-            isIn: [[1, 2, 3, 4, 5]],
-        },
+    },
+    place_type: {
+        type: DataTypes.STRING,
+    },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
     },
 });
 
-export default User;
+export default Place;
