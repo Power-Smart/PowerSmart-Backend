@@ -1,7 +1,6 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-
 const Room = db.define("room", {
     room_id: {
         type: DataTypes.INTEGER,
@@ -14,6 +13,9 @@ const Room = db.define("room", {
     window_type: {
         type: DataTypes.STRING,
     },
+    // room_type:{
+    //     type: DataTypes.STRING,
+    // },
     is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
@@ -21,15 +23,16 @@ const Room = db.define("room", {
     size: {
         type: DataTypes.INTEGER,
     },
+
     type: {
         type: DataTypes.STRING,
     },
     place_id: {
         type: DataTypes.INTEGER,
     },
-    customer_id:{
-        type:DataTypes.INTEGER,
-    }
+    customer_id: {
+        type: DataTypes.INTEGER,
+    },
 });
 
 export default Room;
