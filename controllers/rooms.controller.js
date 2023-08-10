@@ -2,19 +2,15 @@ import Room from "../models/room.model.js";
 
 
 export const getRooms = async (req, res) => {
-    const customerID = req.params.customerID;
-    const placeID = req.params.placeID;
-
-    // console.log("Customer ID: " + customerID);
-    // console.log("Place ID: " + placeID);
+    const {customerID, placeID} = req.params;
 
     try {
         const customerRooms = await Room.findAll({
             where: {
                 place_id: placeID,
-                customer_id: customerID
+                user_id: customerID
             },
-            attributes: ["room_id", "place_id", "name", "window_type", "is_active", "size", "type", "place_id", "customer_id"]
+            attributes: ["room_id", "place_id", "name", "window_type", "is_active", "size", "type"]
         });
         res.send(customerRooms);
     } catch (error) {
@@ -27,15 +23,16 @@ export const getRooms = async (req, res) => {
 export const addRoom = async (req, res) => {
     const { window_type, is_active, size, type, placeID, id, name } = req.body;
 
+    console.log(req.body)
+
     try {
         const room = await Room.create({
-            room_id: room_id,
             window_type: window_type,
             is_active: true,
             size: size,
             type: type,
             place_id: placeID,
-            customer_id: id,
+            user_id: id,
             name: name
         });
         res.status(201).send(room);
