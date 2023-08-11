@@ -1,5 +1,6 @@
 import Room from "../models/room.model.js";
 import Device from "../models/device.model.js";
+import sequelize from "../models/index.js";
 
 
 export const getRooms = async (req, res) => {
@@ -14,7 +15,28 @@ export const getRooms = async (req, res) => {
             attributes: ["room_id", "place_id", "name", "window_type", "is_active", "size", "type"]
         });
 
+        const devices = await Device.findAll({
+            where: {
+                room_id: customerRooms.map((room) => room.room_id)
+            },
+            attributes: [
+                'room_id',
+                [sequelize.fn("COUNT", sequelize.col("room_id")), "device_count"]
+            ],
+            group: ['room_id']
+        })
 
+        customerRooms.forEach((room) => {
+            const count = devices.filter(
+                (device) => device.dataValues.room_id === room.dataValues.room_id
+            );
+
+            if (count.length === 0) {
+                room.dataValues.device_count = 0;
+            } else {
+                room.dataValues.device_count = count[0].dataValues.device_count;
+            }
+        })
 
         res.send(customerRooms);
     } catch (error) {
