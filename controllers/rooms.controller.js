@@ -1,8 +1,9 @@
 import Room from "../models/room.model.js";
+import Device from "../models/device.model.js";
 
 
 export const getRooms = async (req, res) => {
-    const {customerID, placeID} = req.params;
+    const { customerID, placeID } = req.params;
 
     try {
         const customerRooms = await Room.findAll({
@@ -12,6 +13,9 @@ export const getRooms = async (req, res) => {
             },
             attributes: ["room_id", "place_id", "name", "window_type", "is_active", "size", "type"]
         });
+
+
+
         res.send(customerRooms);
     } catch (error) {
         console.log(error);
@@ -21,16 +25,14 @@ export const getRooms = async (req, res) => {
 
 
 export const addRoom = async (req, res) => {
-    const { window_type, is_active, size, type, placeID, id, name } = req.body;
-
-    console.log(req.body)
+    const { name, size, id, placeID, window_type, active_status, room_type } = req.body;
 
     try {
         const room = await Room.create({
             window_type: window_type,
-            is_active: true,
+            is_active: active_status,
             size: size,
-            type: type,
+            type: room_type,
             place_id: placeID,
             user_id: id,
             name: name
@@ -44,30 +46,31 @@ export const addRoom = async (req, res) => {
 };
 
 
+
 export const updateRoom = async (req, res) => {
     const { placeID, roomID } = req.params;
-    const { name, window_type, size, type } = req.body;
+    const { name, window_type, size, room_type, active_status } = req.body;
 
-    console.log(req.body)
+    // console.log(req.body)
 
     try {
-        await Room.update(
-            {
-                name,
-                window_type,
-                size,
-                type
-            },
-            {
-                where: {
-                    place_id: placeID,
-                    room_id: roomID
-                },
-            }
-        );
-        res.status(200).send("update Successfully");
+        const room = await Room.findByPk(roomID);
+
+        if (!room) {
+            return res.status(404).send("Room not found");
+        }
+
+        room.name = name;
+        room.window_type = window_type;
+        room.size = size;
+        room.type = room_type;
+        room.is_active = active_status;
+        await room.save();
+
+        // console.log(room.dataValues);
+        res.status(201).send(room.dataValues);
     } catch (error) {
-        console.log(error);  
+        console.log(error);
         res.status(500).send("Error updating rooms");
     }
 };
