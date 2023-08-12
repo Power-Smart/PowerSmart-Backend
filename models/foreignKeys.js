@@ -187,3 +187,12 @@ Schedule.hasMany(DeviceSwitching, {
     foreignKey: "which_shedule",
     as: "deviceSwitching",
 });
+
+Order.belongsTo(Customer, { foreignKey: "customer_id", as: "customer" });
+Customer.hasMany(Order, { foreignKey: "customer_id", as: "order" });
+
+Order.belongsTo(TechSupport, {
+    foreignKey: "tech_support_id",
+    as: "techSupport",
+});
+TechSupport.hasMany(Order, { foreignKey: "tech_support_id", as: "order" });
