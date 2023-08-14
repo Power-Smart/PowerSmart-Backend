@@ -106,16 +106,3 @@ export const updateRoom = async (req, res) => {
         res.status(500).send("Error updating rooms");
     }
 };
-
-export const getDevices = async (req, res) => {
-    const devices = await Device.findAll({
-        where: {
-            room_id: req.params.roomID,
-        },
-    });
-    const deviceSwitches = await DeviceSwitching.findAll({
-        where: {
-            device_id: devices.map((device) => device.device_id),
-        },
-    });
-};
