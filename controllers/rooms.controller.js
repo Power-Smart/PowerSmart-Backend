@@ -1,7 +1,7 @@
 import Room from "../models/room.model.js";
 import Device from "../models/device.model.js";
 import sequelize from "../models/index.js";
-
+import DeviceSwitching from "../models/deviceSwitching.model.js";
 
 export const getRooms = async (req, res) => {
     const { customerID, placeID } = req.params;
@@ -10,25 +10,37 @@ export const getRooms = async (req, res) => {
         const customerRooms = await Room.findAll({
             where: {
                 place_id: placeID,
-                user_id: customerID
+                user_id: customerID,
             },
-            attributes: ["room_id", "place_id", "name", "window_type", "is_active", "size", "type"]
+            attributes: [
+                "room_id",
+                "place_id",
+                "name",
+                "window_type",
+                "is_active",
+                "size",
+                "type",
+            ],
         });
 
         const devices = await Device.findAll({
             where: {
-                room_id: customerRooms.map((room) => room.room_id)
+                room_id: customerRooms.map((room) => room.room_id),
             },
             attributes: [
-                'room_id',
-                [sequelize.fn("COUNT", sequelize.col("room_id")), "device_count"]
+                "room_id",
+                [
+                    sequelize.fn("COUNT", sequelize.col("room_id")),
+                    "device_count",
+                ],
             ],
-            group: ['room_id']
-        })
+            group: ["room_id"],
+        });
 
         customerRooms.forEach((room) => {
             const count = devices.filter(
-                (device) => device.dataValues.room_id === room.dataValues.room_id
+                (device) =>
+                    device.dataValues.room_id === room.dataValues.room_id
             );
 
             if (count.length === 0) {
@@ -36,7 +48,7 @@ export const getRooms = async (req, res) => {
             } else {
                 room.dataValues.device_count = count[0].dataValues.device_count;
             }
-        })
+        });
 
         res.send(customerRooms);
     } catch (error) {
@@ -45,9 +57,9 @@ export const getRooms = async (req, res) => {
     }
 };
 
-
 export const addRoom = async (req, res) => {
-    const { name, size, id, placeID, window_type, active_status, room_type } = req.body;
+    const { name, size, id, placeID, window_type, active_status, room_type } =
+        req.body;
 
     try {
         const room = await Room.create({
@@ -57,7 +69,7 @@ export const addRoom = async (req, res) => {
             type: room_type,
             place_id: placeID,
             user_id: id,
-            name: name
+            name: name,
         });
         res.status(201).send(room);
         console.log("Room Created Successfully");
@@ -66,8 +78,6 @@ export const addRoom = async (req, res) => {
         res.status(500).send("Error creating room");
     }
 };
-
-
 
 export const updateRoom = async (req, res) => {
     const { placeID, roomID } = req.params;
@@ -97,5 +107,15 @@ export const updateRoom = async (req, res) => {
     }
 };
 
-
-
+export const getDevices = async (req, res) => {
+    const devices = await Device.findAll({
+        where: {
+            room_id: req.params.roomID,
+        },
+    });
+    const deviceSwitches = await DeviceSwitching.findAll({
+        where: {
+            device_id: devices.map((device) => device.device_id),
+        },
+    });
+};

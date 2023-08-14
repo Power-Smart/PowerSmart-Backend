@@ -11,11 +11,16 @@ const DeviceSwitching = db.define("device_switching", {
     activity: {
         type: DataTypes.STRING,
     },
-    which_schedue: {
+    which_schedule: {
         type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: "schedules",
+            key: "schedule_id",
+        },
     },
     status: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
     },
 });
 

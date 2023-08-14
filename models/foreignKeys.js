@@ -175,16 +175,16 @@ Room.hasMany(ModelPrediction, { foreignKey: "room_id", as: "modelPrediction" });
 
 DeviceSwitching.belongsTo(Device, { foreignKey: "device_id", as: "device" });
 Device.hasMany(DeviceSwitching, {
-    foreignKey: "room_id",
+    foreignKey: "device_id",
     as: "deviceSwitching",
 });
 
 DeviceSwitching.belongsTo(Schedule, {
-    foreignKey: "schedule_id",
+    foreignKey: "which_schedule",
     as: "schedue",
 });
 Schedule.hasMany(DeviceSwitching, {
-    foreignKey: "which_shedule",
+    foreignKey: "which_schedule",
     as: "deviceSwitching",
 });
 
