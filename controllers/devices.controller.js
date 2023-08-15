@@ -13,7 +13,7 @@ export const getDevices = async (req, res) => {
             include: { model: Device, as: "device" },
             where: {
                 device_id: devices.map((device) => device.device_id),
-                status: ["active", "active pending"],
+                status: ["active", "active_pending"],
             },
         });
         res.status(200).json(deviceSwitches);
