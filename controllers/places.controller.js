@@ -66,12 +66,17 @@ export const getPlace = async (req, res) => {
 };
 
 export const addPlace = async (req, res) => {
-    const { id, name, location, postal_code } = req.body;
+    const { id, name, address, postal_code, place_type, country, city } =
+        req.body;
+    console.log(req.body);
     try {
         const place = new Place({
             name,
             postal_code,
-            location,
+            country,
+            city,
+            address,
+            place_type,
             is_active: false,
         });
         await place.save();
@@ -92,21 +97,21 @@ export const addPlace = async (req, res) => {
 
 export const updatePlace = async (req, res) => {
     const { placeID } = req.params;
-    const { name, location } = req.body;
+    const { name, address, postal_code, place_type, country, city } = req.body;
 
     try {
-        await Place.update(
-            {
-                name,
-                location,
-            },
-            {
-                where: {
-                    place_id: placeID,
-                },
-            }
-        );
-        res.status(200).send();
+        const place = await Place.findByPk(placeID);
+        if (!place) {
+            return res.status(404).send("place not found");
+        }
+        place.name = name;
+        place.address = address;
+        place.postal_code = postal_code;
+        place.place_type = place_type;
+        place.country = country;
+        place.city = city;
+        await place.save();
+        res.status(200).send(place.dataValues);
     } catch (err) {
         console.log(err);
         res.status(500).send("error updating place");

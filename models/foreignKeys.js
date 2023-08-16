@@ -72,8 +72,8 @@ Supply.belongsTo(Supplier, { foreignKey: "supplier_id", as: "supplier" });
 Supplier.hasOne(Supply, { foreignKey: "supplier_id", as: "supply" });
 
 // Define the association between the SensorUnit and Room models
-// Room.belongsTo(SensorUnit, { foreignKey: 'sensor_unit_id', as: 'sensorUnit' });
-// SensorUnit.hasOne(Room, { foreignKey: 'sensor_unit_id', as: 'room' });
+Room.belongsTo(SensorUnit, { foreignKey: "sensor_unit_id", as: "sensorUnit" });
+SensorUnit.hasOne(Room, { foreignKey: "sensor_unit_id", as: "room" });
 
 // Define the association between the RelayUnit and Place models
 RelayUnit.belongsTo(Place, { foreignKey: "place_id", as: "place" });
@@ -175,15 +175,24 @@ Room.hasMany(ModelPrediction, { foreignKey: "room_id", as: "modelPrediction" });
 
 DeviceSwitching.belongsTo(Device, { foreignKey: "device_id", as: "device" });
 Device.hasMany(DeviceSwitching, {
-    foreignKey: "room_id",
+    foreignKey: "device_id",
     as: "deviceSwitching",
 });
 
 DeviceSwitching.belongsTo(Schedule, {
-    foreignKey: "schedule_id",
+    foreignKey: "which_schedule",
     as: "schedue",
 });
 Schedule.hasMany(DeviceSwitching, {
-    foreignKey: "which_shedule",
+    foreignKey: "which_schedule",
     as: "deviceSwitching",
 });
+
+Order.belongsTo(Customer, { foreignKey: "customer_id", as: "customer" });
+Customer.hasMany(Order, { foreignKey: "customer_id", as: "order" });
+
+Order.belongsTo(TechSupport, {
+    foreignKey: "tech_support_id",
+    as: "techSupport",
+});
+TechSupport.hasMany(Order, { foreignKey: "tech_support_id", as: "order" });
