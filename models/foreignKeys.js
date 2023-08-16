@@ -72,8 +72,8 @@ Supply.belongsTo(Supplier, { foreignKey: "supplier_id", as: "supplier" });
 Supplier.hasOne(Supply, { foreignKey: "supplier_id", as: "supply" });
 
 // Define the association between the SensorUnit and Room models
-// Room.belongsTo(SensorUnit, { foreignKey: 'sensor_unit_id', as: 'sensorUnit' });
-// SensorUnit.hasOne(Room, { foreignKey: 'sensor_unit_id', as: 'room' });
+Room.belongsTo(SensorUnit, { foreignKey: "sensor_unit_id", as: "sensorUnit" });
+SensorUnit.hasOne(Room, { foreignKey: "sensor_unit_id", as: "room" });
 
 // Define the association between the RelayUnit and Place models
 RelayUnit.belongsTo(Place, { foreignKey: "place_id", as: "place" });

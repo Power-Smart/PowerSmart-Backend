@@ -1,5 +1,6 @@
 import Customer from "../models/customer.model.js";
 import User from "../models/user.model.js";
+import axios from "axios";
 
 export const getRoot = async (req, res) => {
     res.send(
@@ -9,16 +10,9 @@ export const getRoot = async (req, res) => {
 
 export const testInsert = async (req, res) => {
     try {
-        const cust = await Customer.create({
-            customer_id: 5,
-            points: 30,
-            tel_no: "0787467743",
-            address: "No 15",
-            is_banned: false,
-            profile_pic: "",
+        axios.get("https://randomuser.me/api/").then((response) => {
+            res.send(response.data);
         });
-        await cust.save();
-        res.send(cust);
     } catch (err) {
         console.log(err);
         res.send("error insertion");
