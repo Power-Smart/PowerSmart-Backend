@@ -54,18 +54,19 @@ export const getDevice = async (req, res) => {
 
 export const toggleDevice = async (req, res) => {
     const { deviceID, status } = req.params;
+    const state = (status === "true") ? true : false;
     try {
         const [relaySocket, metadata] = await db.query(`SELECT relay_unit_id, socket FROM devices WHERE device_id=${deviceID}`);
-        console.log("relaySocket : ", relaySocket);
+        // console.log("relaySocket : ", relaySocket);
         const wsDataToSendOnce = {
             switchingScheme: {
                 [relaySocket[0].relay_unit_id]: {
-                    [relaySocket[0].socket]: status
+                    [relaySocket[0].socket]: state
                 }
             }
         };
 
-        console.log("wsDataToSendOnce : ", wsDataToSendOnce);
+        // console.log("wsDataToSendOnce : ", wsDataToSendOnce);
 
         fetch('http://20.253.48.86:4001/relayswitch', {
             method: 'POST',
@@ -77,9 +78,9 @@ export const toggleDevice = async (req, res) => {
             .then((response) => response.json())
             .then(async (data) => {
                 console.log("data : ", data)
-                if (_.isEmpty(data.notFoundRelays)) {
+                if (!(_.isEmpty(data.foundRelays))) {
                     await DeviceSwitching.update({
-                        switch_status: status,
+                        switch_status: state,
                     }, {
                         where: {
                             device_id: deviceID,
@@ -87,13 +88,13 @@ export const toggleDevice = async (req, res) => {
                         }
                     });
                 } else {
-                    throw new Error("Relay not found");
+                    return res.status(200).send("not_toggled");
                 }
-                res.status(200).json({ message: "Device toggled" });
+                res.status(200).send("toggled");
             })
-            .catch((err) => res.status(500).json({ error: err.message }));
+            .catch((err) => res.status(200).send("not_toggled"));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(200).send("not_toggled");
     }
 
 }
