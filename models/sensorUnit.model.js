@@ -16,10 +16,13 @@ const SensorUnit = db.define("sensor_unit", {
     category: {
         type: DataTypes.STRING,
     },
+    status: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
     room_id: {
         type: DataTypes.INTEGER,
     },
-
 });
 
 export default SensorUnit;

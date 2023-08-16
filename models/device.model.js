@@ -14,25 +14,21 @@ const Device = db.define("device", {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
-    category: {
-        type: DataTypes.STRING,
-    },
-
     type: {
         type: DataTypes.STRING,
     },
-
     schedule_id: {
+        type: DataTypes.INTEGER,
+    },
+    socket: {
+        type: DataTypes.INTEGER,
+    },
+    room_id: {
+        type: DataTypes.INTEGER,
+    },
+    relay_unit_id: {
         type: DataTypes.INTEGER,
     },
 });
 
 export default Device;
-
-// schedule_id: {
-//     type: DataTypes.INTEGER,
-//     references: {
-//         model: "device_schedules",
-//         key: "schedule_id",
-//     },
-// },

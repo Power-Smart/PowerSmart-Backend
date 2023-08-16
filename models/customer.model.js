@@ -2,7 +2,7 @@ import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
 const Customer = db.define("customer", {
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
     },

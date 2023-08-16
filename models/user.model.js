@@ -7,7 +7,10 @@ const User = db.define("user", {
         primaryKey: true,
         autoIncrement: true,
     },
-    name: {
+    first_name: {
+        type: DataTypes.STRING,
+    },
+    last_name: {
         type: DataTypes.STRING,
     },
     email: {

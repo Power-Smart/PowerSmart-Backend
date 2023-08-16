@@ -11,7 +11,7 @@ const Item = db.define("item", {
         type: DataTypes.STRING,
     },
     price: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
     },
     description: {
         type: DataTypes.STRING,
@@ -22,11 +22,10 @@ const Item = db.define("item", {
     item_img: {
         type: DataTypes.STRING,
     },
-    manager_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-
 });
 
 export default Item;

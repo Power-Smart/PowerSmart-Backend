@@ -14,11 +14,10 @@ const Feedback = db.define("feedback", {
     description: {
         type: DataTypes.STRING,
     },
-    customer_id: {
+    user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-
 });
 
 export default Feedback;

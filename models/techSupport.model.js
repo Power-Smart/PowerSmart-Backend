@@ -1,8 +1,8 @@
-import db from './index.js';
-import { DataTypes } from 'sequelize';
+import db from "./index.js";
+import { DataTypes } from "sequelize";
 
-const TechSupport = db.define('tech_support', {
-    tech_support_id: {
+const TechSupport = db.define("tech_support", {
+    user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
     },
@@ -18,10 +18,6 @@ const TechSupport = db.define('tech_support', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    is_complete_task:{
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    }
 });
 
 export default TechSupport;
