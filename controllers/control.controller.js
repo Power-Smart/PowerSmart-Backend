@@ -9,6 +9,7 @@ import schedule from "../models/schedule.model.js";
 import axios from "axios";
 import db from "../models/index.js";
 import _ from "lodash";
+import fetch from "node-fetch";
 
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
