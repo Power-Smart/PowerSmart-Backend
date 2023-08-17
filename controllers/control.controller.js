@@ -11,6 +11,7 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
+
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -183,11 +184,12 @@ export const handleSensorData = async (req, res) => {
                 data: [
                     {
                         device_id: 2,
-                        switch_status: true,
-                    },
+                        switch_status: Math.random() < 0.5
+                        }
+                        ,
                     {
                         device_id: 3,
-                        switch_status: true,
+                        switch_status:Math.random() < 0.5
                     },
                 ],
                 status: 200,
