@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import Place from "../models/place.model.js";
 import CustomerPlace from "../models/customerPlace.model.js";
 import TechSupport from "../models/techSupport.model.js";
+import Room from "../models/room.model.js";
 import TechSupportPlace from "../models/techSupportPlace.model.js";
 import _ from "lodash";
 
@@ -59,6 +60,34 @@ export const assignedPlacesByCustomer = async (req, res) => {
             });
         });
         res.status(200).json(assignedPlaces);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const assignedRoomsByPlace = async (req, res) => {
+    const { techSupportID, placeID } = req.params;
+    try {
+        const isAssigned = await TechSupportPlace.findOne({
+            where: {
+                tech_support_id: techSupportID,
+                place_id: placeID,
+            },
+        });
+        if (!isAssigned) {
+            res.status(403).json({ error: "Forbidden" });
+        } else {
+            const rooms = await Room.findAll({
+                where: {
+                    place_id: placeID,
+                },
+                attributes: {
+                    exclude: ["createdAt", "updatedAt"]
+                },
+            });
+            res.status(200).json(rooms);
+        }
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
