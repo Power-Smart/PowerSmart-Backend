@@ -7,6 +7,7 @@ import roomsRouter from "./room.route.js";
 import paymentRouter from "./payment.route.js";
 import deviceRouter from "./device.route.js";
 import techAssignRouter from "./techAssigns.route.js";
+import marketplaceRouter from "./marketPlace.route.js";
 
 const router = Express.Router();
 
@@ -18,5 +19,6 @@ router.use("/places/rooms", roomsRouter);
 router.use("/devices", deviceRouter);
 router.use("/payment", paymentRouter);
 router.use("/assigns", techAssignRouter)
+router.use("/marketplace",marketplaceRouter);
 
 export default router;
