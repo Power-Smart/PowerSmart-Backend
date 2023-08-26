@@ -30,3 +30,18 @@ export const getCustomerOrderRequests = async (req, res) => {
     }
 }
 
+
+export const deleteCustomerOrderRequest = async (req, res) => {
+    console.log("deleteCustomerOrderRequest");
+    // try {
+    //     const { orderID } = req.params;
+    //     const results = await customerOrderRequest.destroy({
+    //         where: {
+    //             order_id: orderID,
+    //         },
+    //     });
+    //     res.status(200).json(results);
+    // } catch (error) {
+    //     res.status(500).json({ message: error.message });
+    // }
+}
