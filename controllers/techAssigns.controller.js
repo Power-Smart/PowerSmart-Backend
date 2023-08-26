@@ -4,6 +4,7 @@ import CustomerPlace from "../models/customerPlace.model.js";
 import TechSupport from "../models/techSupport.model.js";
 import Room from "../models/room.model.js";
 import TechSupportPlace from "../models/techSupportPlace.model.js";
+import RelayUnit from "../models/relayUnit.model.js";
 import _ from "lodash";
 
 export const assignedCustomers = async (req, res) => {
@@ -88,6 +89,33 @@ export const assignedRoomsByPlace = async (req, res) => {
             res.status(200).json(rooms);
         }
 
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const relayUnitsOfPlace = async (req, res) => {
+    const { techSupportID, placeID } = req.params;
+    try {
+        const isAssigned = await TechSupportPlace.findOne({
+            where: {
+                tech_support_id: techSupportID,
+                place_id: placeID,
+            },
+        });
+        if (!isAssigned) {
+            res.status(403).json({ error: "Forbidden" });
+        } else {
+            const relayUnits = await RelayUnit.findAll({
+                where: {
+                    place_id: placeID,
+                },
+                attributes: {
+                    exclude: ["createdAt", "updatedAt"]
+                },
+            });
+            res.status(200).json(relayUnits);
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
