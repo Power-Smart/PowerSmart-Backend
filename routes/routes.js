@@ -9,7 +9,8 @@ import deviceRouter from "./device.route.js";
 import techAssignRouter from "./techAssigns.route.js";
 import marketplaceRouter from "./marketPlace.route.js";
 import customerOrderRequestRouter from "./customerOrderRequest.route.js";
-
+import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
+import complaintHandlingRouter from "./complaintHandling.route.js";
 
 const router = Express.Router();
 
@@ -23,5 +24,9 @@ router.use("/payment", paymentRouter);
 router.use("/assigns", techAssignRouter)
 router.use("/marketplace",marketplaceRouter);
 router.use('/customerOrderRequests', customerOrderRequestRouter);
+router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
+router.use('/complaintHandling', complaintHandlingRouter);
+
+
 
 export default router;
