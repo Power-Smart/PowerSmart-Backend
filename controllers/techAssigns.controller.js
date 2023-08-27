@@ -110,11 +110,61 @@ export const relayUnitsOfPlace = async (req, res) => {
                 where: {
                     place_id: placeID,
                 },
-                attributes: {
-                    exclude: ["createdAt", "updatedAt"]
-                },
             });
             res.status(200).json(relayUnits);
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const addRelayUnit = async (req, res) => {
+    const { techSupportID, placeID } = req.params;
+    const { relayUnit } = req.body;
+    try {
+        const isAssigned = await TechSupportPlace.findOne({
+            where: {
+                tech_support_id: techSupportID,
+                place_id: placeID,
+            },
+        });
+        if (!isAssigned) {
+            res.status(403).json({ error: "Forbidden" });
+        } else {
+            const newRelayUnit = await RelayUnit.create({
+                ...relayUnit,
+                place_id: placeID,
+                status: "disabled"
+            });
+            res.status(200).json(newRelayUnit);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const updateRelayUnit = async (req, res) => {
+    const { techSupportID, placeID, relayUnitID } = req.params;
+    const { relayUnit } = req.body;
+    try {
+        const isAssigned = await TechSupportPlace.findOne({
+            where: {
+                tech_support_id: techSupportID,
+                place_id: placeID,
+            },
+        });
+        if (!isAssigned) {
+            res.status(403).json({ error: "Forbidden" });
+        } else {
+            const updatedRelayUnit = await RelayUnit.update({
+                ...relayUnit,
+            }, {
+                where: {
+                    relay_unit_id: relayUnitID,
+                },
+            });
+            res.status(200).json(updatedRelayUnit);
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
