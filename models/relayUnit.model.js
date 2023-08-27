@@ -14,7 +14,7 @@ const RelayUnit = db.define("relay_unit", {
         type: DataTypes.TEXT,
     },
     category: {
-        type: DataTypes.STRING,
+        type: DataTypes.CHAR(1),
     },
     status: {
         type: DataTypes.STRING,
