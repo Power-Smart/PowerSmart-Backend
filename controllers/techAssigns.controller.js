@@ -164,9 +164,34 @@ export const updateRelayUnit = async (req, res) => {
                     relay_unit_id: relayUnitID,
                 },
             });
-            res.status(200).json(updatedRelayUnit);
+            res.status(200).json(relayUnit);
         }
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const deleteRelayUnit = async (req, res) => {
+    const { techSupportID, placeID, relayUnitID } = req.params;
+    try {
+        const isAssigned = await TechSupportPlace.findOne({
+            where: {
+                tech_support_id: techSupportID,
+                place_id: placeID,
+            },
+        });
+        if (!isAssigned) {
+            res.status(403).json({ error: "Forbidden" });
+        } else {
+            await RelayUnit.destroy({
+                where: {
+                    relay_unit_id: relayUnitID,
+                },
+            });
+            res.status(204).json({ relay_unit_id: relayUnitID });
+        }
+    } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err.message });
     }
 }
