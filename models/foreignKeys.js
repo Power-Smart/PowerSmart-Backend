@@ -25,6 +25,16 @@ import InformUsage from "./informUsage.model.js";
 import SensorData from "./sensorData.model.js";
 import ModelPrediction from "./modelPrediction.model.js";
 import DeviceSwitching from "./deviceSwitching.model.js";
+import TechSupportPlace from "./techSupportPlace.model.js"
+
+
+import Marketplace from "./marketplace.model.js";
+import customerOrderRequest from "./customerOrderRequest.model.js";
+
+// Define the association between the Customer and CustomerOrderRequest models
+customerOrderRequest.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
+Customer.hasMany(customerOrderRequest, { foreignKey: "user_id", as: "customerOrderRequest" });
+
 
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });

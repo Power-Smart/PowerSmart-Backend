@@ -18,6 +18,11 @@ const TechSupport = db.define("tech_support", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    customers: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+        allowNull: true,
+    },
 });
 
 export default TechSupport;
