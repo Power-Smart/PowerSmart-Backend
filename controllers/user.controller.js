@@ -51,6 +51,8 @@ export const updateCustomerProfile = async (req, res) => {
     }
 };
 
+
+
 export const saveProfile = async (req, res) => {
     console.log(req.file)
 
