@@ -32,11 +32,15 @@ import Marketplace from "./marketplace.model.js";
 import CustomerOrderRequest from "./customerOrderRequest.model.js";
 import TechSupportRating from "./techSupportRating.model.js";
 import ComplaintHandling from "./complaintHandling.model.js";
+import CustomerServiceRequest from "./customerServiceRequest.model.js";
 
 
+ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
+Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id", as: "complaintHandling" });
 
-ComplaintHandling.belongsTo(User, { foreignKey: "user_id", as: "customer" });
-User.hasMany(ComplaintHandling, { foreignKey: "assign_tech_support_id", as: "complaintHandling" });
+ComplaintHandling.belongsTo(TechSupport, { foreignKey: "user_id", as: "techSupport" });
+TechSupport.hasMany(ComplaintHandling, { foreignKey: "tech_support_id", as: "complaintHandling" });
+
 
 // Define the association between the Customer and CustomerOrderRequest models
 CustomerOrderRequest.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });

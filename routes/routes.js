@@ -11,6 +11,8 @@ import marketplaceRouter from "./marketPlace.route.js";
 import customerOrderRequestRouter from "./customerOrderRequest.route.js";
 import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
+import customerServiceRequestRouter from "./customerServiceRequest.route.js";
+
 
 const router = Express.Router();
 
@@ -26,6 +28,7 @@ router.use("/marketplace",marketplaceRouter);
 router.use('/customerOrderRequests', customerOrderRequestRouter);
 router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
+router.use('/customerServiceRequest', customerServiceRequestRouter);
 
 
 
