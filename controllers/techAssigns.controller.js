@@ -6,6 +6,8 @@ import Room from "../models/room.model.js";
 import TechSupportPlace from "../models/techSupportPlace.model.js";
 import RelayUnit from "../models/relayUnit.model.js";
 import _ from "lodash";
+import Device from "../models/device.model.js";
+import DeviceSwitching from "../models/deviceSwitching.model.js";
 
 export const assignedCustomers = async (req, res) => {
     const { techSupportID } = req.params;
@@ -69,13 +71,7 @@ export const assignedPlacesByCustomer = async (req, res) => {
 export const assignedRoomsByPlace = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     try {
-        const isAssigned = await TechSupportPlace.findOne({
-            where: {
-                tech_support_id: techSupportID,
-                place_id: placeID,
-            },
-        });
-        if (!isAssigned) {
+        if (!isAssignedToPlace(techSupportID, placeID)) {
             res.status(403).json({ error: "Forbidden" });
         } else {
             const rooms = await Room.findAll({
@@ -97,13 +93,7 @@ export const assignedRoomsByPlace = async (req, res) => {
 export const relayUnitsOfPlace = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     try {
-        const isAssigned = await TechSupportPlace.findOne({
-            where: {
-                tech_support_id: techSupportID,
-                place_id: placeID,
-            },
-        });
-        if (!isAssigned) {
+        if (!isAssignedToPlace(techSupportID, placeID)) {
             res.status(403).json({ error: "Forbidden" });
         } else {
             const relayUnits = await RelayUnit.findAll({
@@ -122,13 +112,7 @@ export const addRelayUnit = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     const { relayUnit } = req.body;
     try {
-        const isAssigned = await TechSupportPlace.findOne({
-            where: {
-                tech_support_id: techSupportID,
-                place_id: placeID,
-            },
-        });
-        if (!isAssigned) {
+        if (!isAssignedToPlace(techSupportID, placeID)) {
             res.status(403).json({ error: "Forbidden" });
         } else {
             const newRelayUnit = await RelayUnit.create({
@@ -148,16 +132,10 @@ export const updateRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     const { relayUnit } = req.body;
     try {
-        const isAssigned = await TechSupportPlace.findOne({
-            where: {
-                tech_support_id: techSupportID,
-                place_id: placeID,
-            },
-        });
-        if (!isAssigned) {
+        if (!isAssignedToPlace(techSupportID, placeID)) {
             res.status(403).json({ error: "Forbidden" });
         } else {
-            const updatedRelayUnit = await RelayUnit.update({
+            await RelayUnit.update({
                 ...relayUnit,
             }, {
                 where: {
@@ -174,13 +152,7 @@ export const updateRelayUnit = async (req, res) => {
 export const deleteRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     try {
-        const isAssigned = await TechSupportPlace.findOne({
-            where: {
-                tech_support_id: techSupportID,
-                place_id: placeID,
-            },
-        });
-        if (!isAssigned) {
+        if (!isAssignedToPlace(techSupportID, placeID)) {
             res.status(403).json({ error: "Forbidden" });
         } else {
             await RelayUnit.destroy({
@@ -193,5 +165,110 @@ export const deleteRelayUnit = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
+    }
+}
+
+export const getDevicesOfRoom = async (req, res) => {
+    const { techSupportID, placeID, roomID } = req.params;
+    try {
+        if (isAssignedToPlace(techSupportID, placeID)) {
+            const devices = await Device.findAll({
+                where: {
+                    room_id: roomID,
+                },
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "room_id"]
+                },
+            })
+            res.status(200).json(devices);
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const addDevice = async (req, res) => {
+    const { techSupportID, placeID, roomID } = req.params;
+    const { device } = req.body;
+    try {
+        if (isAssignedToPlace(techSupportID, placeID)) {
+            const newDevice = await Device.create({
+                ...device,
+                is_active: false,
+                room_id: roomID,
+            });
+            await DeviceSwitching.create({
+                device_id: newDevice.device_id,
+                switch_status: false,
+                activity: "none",
+                status: "active"
+            });
+            res.status(200).json(newDevice);
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const updateDevice = async (req, res) => {
+    const { techSupportID, placeID, roomID, deviceID } = req.params;
+    const { device } = req.body;
+    try {
+        if (isAssignedToPlace(techSupportID, placeID)) {
+            await Device.update({
+                ...device,
+            }, {
+                where: {
+                    device_id: deviceID,
+                    room_id: roomID,
+                },
+            });
+            res.status(200).json(device);
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const deleteDevice = async (req, res) => {
+    const { techSupportID, placeID, roomID, deviceID } = req.params;
+    try {
+        if (isAssignedToPlace(techSupportID, placeID)) {
+            await Device.destroy({
+                where: {
+                    device_id: deviceID,
+                    room_id: roomID,
+                },
+            });
+            res.status(204).json({ device_id: deviceID });
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function isAssignedToPlace(techSupportID, placeID) {
+    const isAssigned = await TechSupportPlace.findOne({
+        where: {
+            tech_support_id: techSupportID,
+            place_id: placeID,
+        },
+    });
+    if (isAssigned) {
+        return true;
+    } else {
+        return false;
     }
 }
