@@ -160,7 +160,7 @@ export const deleteRelayUnit = async (req, res) => {
                     relay_unit_id: relayUnitID,
                 },
             });
-            res.status(204).json({ relay_unit_id: relayUnitID });
+            res.status(200).json({ relay_unit_id: relayUnitID });
         }
     } catch (err) {
         console.log(err);
@@ -249,7 +249,7 @@ export const deleteDevice = async (req, res) => {
                     room_id: roomID,
                 },
             });
-            res.status(204).json({ device_id: deviceID });
+            res.status(200).json({ device_id: deviceID });
         } else {
             res.status(403).json({ error: "Forbidden" });
         }
