@@ -24,7 +24,7 @@ const Place = db.define("place", {
         allowNull: true,
     },
     time_zone: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
     },
     place_type: {
         type: DataTypes.STRING,

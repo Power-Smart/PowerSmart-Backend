@@ -494,7 +494,7 @@ export const handleSensorData = async (req, res) => {
                             const value4 = await deciceIdList4();
                             console.log(value4)
                             const deviceSwitchDeleteResultsAfterInternalError =
-                                await device_switching.delete({
+                                await device_switching.destroy({
                                     where: {
                                         device_id: value4,
                                         status: "active_pending",
@@ -840,7 +840,7 @@ export const switchDevicesBySchedule = async (req, res) => {
                     const value4 = await deciceIdList4();
                     console.log(value4)
                     const deviceSwitchDeleteResultsAfterInternalError =
-                        await device_switching.delete({
+                        await device_switching.destroy({
                             where: {
                                 device_id: value4,
                                 status: "active_pending",
@@ -1184,7 +1184,7 @@ export const switchDevicesManually = async (req, res) => {
                     const value4 = await deciceIdList4();
                     console.log(value4)
                     const deviceSwitchDeleteResultsAfterInternalError =
-                        await device_switching.delete({
+                        await device_switching.destroy({
                             where: {
                                 device_id: value4,
                                 status: "active_pending",
