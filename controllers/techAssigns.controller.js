@@ -8,6 +8,8 @@ import RelayUnit from "../models/relayUnit.model.js";
 import _ from "lodash";
 import Device from "../models/device.model.js";
 import DeviceSwitching from "../models/deviceSwitching.model.js";
+import SensorUnit from "../models/sensorUnit.model.js";
+import SensorData from "../models/sensorData.model.js";
 
 export const assignedCustomers = async (req, res) => {
     const { techSupportID } = req.params;
@@ -259,14 +261,73 @@ export const deleteDevice = async (req, res) => {
     }
 }
 
+export const getSensorUnitOfRoom = async (req, res) => {
+    const { techSupportID, placeID, roomID } = req.params;
+    try {
+        if (isAssignedToPlace(techSupportID, placeID)) {
+            const sensorUnit = await SensorUnit.findOne({
+                where: {
+                    room_id: roomID,
+                },
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "room_id"]
+                },
+            });
+            res.status(200).json(sensorUnit.dataValues);
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getSensorData = async (req, res) => {
+    const { sensorUnitID, limit } = req.params;
+    try {
+        const sensorData = await SensorData.findAll({
+            where: {
+                sensor_unit_id: sensorUnitID,
+            },
+            order: [["updatedAt", "DESC"]],
+            limit: limit,
+        });
+        res.status(200).json(sensorData);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const updateSensorUnit = async (req, res) => {
+    const { roomID, sensorUnitID } = req.params;
+    const { sensorUnit } = req.body;
+    try {
+        await SensorUnit.update({
+            ...sensorUnit,
+        }, {
+            where: {
+                sensor_unit_id: sensorUnitID,
+                room_id: roomID,
+            },
+        });
+        res.status(200).json(sensorUnit);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
 async function isAssignedToPlace(techSupportID, placeID) {
     const isAssigned = await TechSupportPlace.findOne({
         where: {
             tech_support_id: techSupportID,
             place_id: placeID,
+            access_type: 1,
         },
     });
-    if (isAssigned) {
+    if (isAssigned?.length !== 0) {
         return true;
     } else {
         return false;

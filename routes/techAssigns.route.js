@@ -11,6 +11,9 @@ import {
     addDevice,
     updateDevice,
     deleteDevice,
+    getSensorUnitOfRoom,
+    getSensorData,
+    updateSensorUnit
 } from "../controllers/techAssigns.controller.js";
 
 const router = Express.Router();
@@ -29,4 +32,7 @@ router.post("/devices/:techSupportID/:placeID/:roomID", addDevice);
 router.put("/devices/:techSupportID/:placeID/:roomID/:deviceID", updateDevice);
 router.delete("/devices/:techSupportID/:placeID/:roomID/:deviceID", deleteDevice);
 
+router.get("/sensorunit/logs/:sensorUnitID/:limit", getSensorData);
+router.put("/sensorunit/:roomID/:sensorUnitID", updateSensorUnit);
+router.get("/sensorunit/:techSupportID/:placeID/:roomID", getSensorUnitOfRoom);
 export default router;
