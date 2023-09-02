@@ -4,7 +4,7 @@ import model_predictions from "../models/modelPrediction.model.js";
 import sensor_unit from "../models/sensorUnit.model.js";
 import device_switching from "../models/deviceSwitching.model.js";
 import room from "../models/room.model.js";
-import place from "../models/place.model.js";
+import Place from "../models/place.model.js";
 import schedule from "../models/schedule.model.js";
 import axios from "axios";
 import db from "../models/index.js";
