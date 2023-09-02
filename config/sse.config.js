@@ -1,16 +1,52 @@
 export const sse_array = [];
 
-export const remove_sse = (id) => {
+const remove_sse_client = (id) => {
     let index = sse_array.findIndex(sse => sse.id === id);
     sse_array.splice(index, 1);
 }
 
-export const add_sse = (id, res) => {
+const add_sse_client = (id, res) => {
     sse_array.push({ id, res });
 }
 
-export const sse_headers = {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    "Connection": "keep-alive"
+export const print_sse_array = () => {
+    console.log('SSE array', sse_array.map((item) => {
+        return item.id;
+    }));
+}
+
+export const send_sse_data = (user_id, data) => {
+    let index = sse_array.findIndex(sse => +sse.id === +user_id);
+    if (index !== -1) {
+        sse_array[index].res.write(`data: ${data}\n\n`);
+    }
+}
+
+export const get_sse_client = (user_id) => {
+    let index = sse_array.findIndex(sse => +sse.id === +user_id);
+    if (index !== -1) {
+        return sse_array[index].res;
+    }
+    return null;
+}
+
+export const sse_middleware = (req, res, next) => {
+    const { user_id } = req.params;
+
+    if (sse_array.findIndex(sse => +sse.id === +user_id) === -1) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        add_sse_client(user_id, res);
+        print_sse_array();
+
+        req.on('close', () => {
+            remove_sse_client(user_id);
+            console.log('SSE client removed');
+            print_sse_array();
+            res.end();
+        });
+    }
+
+    next();
 }
