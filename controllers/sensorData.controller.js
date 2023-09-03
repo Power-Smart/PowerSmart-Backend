@@ -28,6 +28,7 @@ export const sendPlaceSensorData = async (req, res) => {
                 })
                 .catch(error => {
                     console.error(error);
+                    sse_client.write(`data:${JSON.stringify({ err })}\n\n`);
                 });
         } catch (err) {
             console.log(err);
@@ -63,7 +64,7 @@ export const getPlacesAndRooms = async (user_id) => {
     });
 
     const promises = rooms.map(async (room) => {
-        const [sensorData, metadata] = await sequelize.query(`SELECT * FROM sensor_data, sensor_units WHERE sensor_data.sensor_unit_id = sensor_units.sensor_unit_id AND sensor_units.room_id = ${room.room_id} ORDER BY sensor_data."createdAt" DESC LIMIT 1`);
+        const [sensorData, metadata] = await sequelize.query(`SELECT * FROM sensor_data, sensor_units WHERE sensor_data.sensor_unit_id = sensor_units.sensor_unit_id AND sensor_units.room_id = ${room.room_id} ORDER BY sensor_data."updatedAt" DESC LIMIT 1`);
         let sensorDataObj = sensorData[0];
         room.dataValues = { ...room.dataValues, ...sensorDataObj };
         return room.dataValues;
