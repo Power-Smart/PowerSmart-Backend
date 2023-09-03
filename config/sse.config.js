@@ -5,14 +5,12 @@ const remove_sse_client = (id) => {
     sse_array.splice(index, 1);
 }
 
-const add_sse_client = (id, res) => {
-    sse_array.push({ id, res });
+const add_sse_client = (id, res, type = 1) => {
+    sse_array.push({ id, res, type: +type });
 }
 
 export const print_sse_array = () => {
-    console.log('SSE array', sse_array.map((item) => {
-        return item.id;
-    }));
+    console.log('SSE array', sse_array.map((item) => ({ user_id: item.id, type: item.type })));
 }
 
 export const send_sse_data = (user_id, data) => {
