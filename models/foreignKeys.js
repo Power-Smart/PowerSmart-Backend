@@ -26,7 +26,7 @@ import SensorData from "./sensorData.model.js";
 import ModelPrediction from "./modelPrediction.model.js";
 import DeviceSwitching from "./deviceSwitching.model.js";
 import TechSupportPlace from "./techSupportPlace.model.js"
-
+import OwnedItem from "./ownedItem.model.js";
 
 import Marketplace from "./marketplace.model.js";
 import customerOrderRequest from "./customerOrderRequest.model.js";

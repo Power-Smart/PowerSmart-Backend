@@ -10,6 +10,9 @@ import Device from "../models/device.model.js";
 import DeviceSwitching from "../models/deviceSwitching.model.js";
 import SensorUnit from "../models/sensorUnit.model.js";
 import SensorData from "../models/sensorData.model.js";
+import OwnedItem from "../models/ownedItem.model.js";
+
+import sequelize from "../models/index.js";
 
 export const assignedCustomers = async (req, res) => {
     const { techSupportID } = req.params;
@@ -313,6 +316,36 @@ export const updateSensorUnit = async (req, res) => {
             },
         });
         res.status(200).json(sensorUnit);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const getAvilUnitCount = async (req, res) => {
+    try {
+        const { customerID, type } = req.params;
+        const units = await OwnedItem.findByPk(customerID);
+        if (!units) return res.status(404).json({ error: "Not Found" });
+        if (type === "relay") {
+            const places = await CustomerPlace.findAll({
+                where: {
+                    user_id: customerID,
+                },
+                attributes: ["place_id"],
+            });
+            const relayUnits = await RelayUnit.count({
+                where: {
+                    place_id: places.map((place) => place.place_id),
+                }
+            });
+            res.status(200).json({ count: ((+units.relay_units) - (+relayUnits)) });
+        } else if (type === "sensor") {
+            const [sensor_units, metadata] = await sequelize.query(`SELECT COUNT(DISTINCT sensor_units.sensor_unit_id) FROM sensor_units, rooms, customer_places WHERE sensor_units.room_id = rooms.room_id AND rooms.place_id = customer_places.place_id AND customer_places.user_id = ${customerID}`);
+            res.status(200).json({ count: ((+units.sensor_units) - (+sensor_units[0].count)) });
+        } else {
+            res.status(400).json({ error: "Bad Request" });
+        }
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
