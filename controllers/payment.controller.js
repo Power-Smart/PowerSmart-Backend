@@ -1,5 +1,8 @@
 import Order from "../models/order.model.js";
 import Item from "../models/item.model.js";
+import dotenv from "dotenv";
+import crypto from "crypto-js";
+dotenv.config();
 
 export const getOrdersForCustomer = async (req, res) => {
     const { cusId } = req.params;
@@ -63,3 +66,48 @@ export const createOrder = async (req, res) => {
         res.status(409).json({ message: error.message });
     }
 };
+
+export const checkoutPayment = async (req, res) => {
+    const { merchant_id, order_id, payhere_amount, payhere_currency, status_code, md5sig } = req.body;
+    const hash = createHash(merchant_id, order_id, payhere_amount, payhere_currency);
+
+    if (hash === md5sig && status_code === 2) {
+        //  update payment in tables
+    }
+}
+
+export const getBillDetails = async (req, res) => {
+    const { cusId } = req.params;
+
+    try {
+        const orders = await Order.findAll({
+            where: {
+                customer_id: cusId,
+                is_paid: false,
+                payment_id: null
+            },
+            include: {
+                model: Item,
+                as: 'item',
+                attributes: ['name', 'price']
+            },
+            attributes: {
+                exclude: ["updatedAt", "createdAt", "tech_support_id", "customer_id", "order_date"]
+            }
+        });
+        const totalBill = orders.reduce((acc, item) => acc + item.dataValues.quantity * item.dataValues.item.price, 0)
+        // ! Not completed -> need to create the BILL table
+        res.status(200).json({ totalBill, orders });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+}
+
+
+function createHash(merchant_id, order_id, amount, currency) {
+    const merchant_secret = process.env.MERCHANT_SECRET;
+    const hashed_secret = crypto.MD5(merchant_secret).toString().toUpperCase();
+    let amountFormated = parseFloat(amount).toLocaleString('en-us', { minimumFractionDigits: 2 }).replaceAll(',', '');
+    let hash = crypto.MD5(merchant_id + order_id + amountFormated + currency + hashed_secret).toString().toUpperCase();
+    return hash;
+}
