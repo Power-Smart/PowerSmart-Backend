@@ -1,14 +1,18 @@
 import Express from "express";
 import {
     checkoutPayment,
-    getBillDetails,
+    getUserDetails,
     getOrdersForCustomer,
     getOrdersForTechSupport,
+    calTotal,
 } from "../controllers/payment.controller.js";
 
 const router = Express.Router();
 
-router.get("/customer/bill_details/:cusId", getBillDetails);
+
+router.post("/customer/total/:cusId", calTotal);
+
+router.get("/customer/bill_details/:cusId", getUserDetails);
 router.get("/customer/:cusId", getOrdersForCustomer);
 
 router.get("/techsupport/:tchID", getOrdersForTechSupport);

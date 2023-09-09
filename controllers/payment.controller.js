@@ -78,25 +78,10 @@ export const checkoutPayment = async (req, res) => {
     }
 }
 
-export const getBillDetails = async (req, res) => {
+export const getUserDetails = async (req, res) => {
     const { cusId } = req.params;
 
     try {
-        const orders = await Order.findAll({
-            where: {
-                customer_id: cusId,
-                is_paid: false,
-                payment_id: null
-            },
-            include: {
-                model: Item,
-                as: 'item',
-                attributes: ['name', 'price']
-            },
-            attributes: {
-                exclude: ["updatedAt", "createdAt", "tech_support_id", "customer_id", "order_date"]
-            }
-        });
         const userData = await Customer.findOne({
             where: {
                 user_id: cusId
@@ -108,10 +93,38 @@ export const getBillDetails = async (req, res) => {
             },
             attributes: ['user_id', 'tel_no', 'address']
         });
-        const totalBill = orders.reduce((acc, item) => acc + item.dataValues.quantity * item.dataValues.item.price, 0)
-        res.status(200).json({ totalBill, userData });
+        res.status(200).json({ userData });
     } catch (error) {
         res.status(404).json({ message: error.message });
+    }
+}
+
+export const calTotal = async (req, res) => {
+    const { cusId } = req.params;
+    const { checkedList } = req.body;
+    try {
+        const places = Object.keys(checkedList).filter(key => checkedList[key] !== 0).map(key => +key);
+        const orders = await Order.findAll({
+            where: {
+                customer_id: cusId,
+                is_paid: false,
+                payment_id: null,
+                place_id: places
+            },
+            include: {
+                model: Item,
+                as: 'item',
+                attributes: ['name', 'price']
+            },
+            attributes: {
+                exclude: ["updatedAt", "createdAt", "tech_support_id", "customer_id", "order_date"]
+            }
+        });
+        const total = orders.reduce((acc, item) => acc + item.dataValues.quantity * item.dataValues.item.price, 0)
+        res.status(200).json({ total });
+    } catch (error) {
+        // console.log(error);
+        res.status(500).json({ message: error.message });
     }
 }
 
