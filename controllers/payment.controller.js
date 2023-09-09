@@ -2,6 +2,8 @@ import Order from "../models/order.model.js";
 import Item from "../models/item.model.js";
 import dotenv from "dotenv";
 import crypto from "crypto-js";
+import User from "../models/user.model.js";
+import Customer from "../models/customer.model.js";
 dotenv.config();
 
 export const getOrdersForCustomer = async (req, res) => {
@@ -95,9 +97,19 @@ export const getBillDetails = async (req, res) => {
                 exclude: ["updatedAt", "createdAt", "tech_support_id", "customer_id", "order_date"]
             }
         });
+        const userData = await Customer.findOne({
+            where: {
+                user_id: cusId
+            },
+            include: {
+                model: User,
+                as: 'user',
+                attributes: ['first_name', 'last_name', 'email']
+            },
+            attributes: ['user_id', 'tel_no', 'address']
+        });
         const totalBill = orders.reduce((acc, item) => acc + item.dataValues.quantity * item.dataValues.item.price, 0)
-        // ! Not completed -> need to create the BILL table
-        res.status(200).json({ totalBill, orders });
+        res.status(200).json({ totalBill, userData });
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
