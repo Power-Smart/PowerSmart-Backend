@@ -11,6 +11,11 @@ import marketplaceRouter from "./marketPlace.route.js";
 import customerOrderRequestRouter from "./customerOrderRequest.route.js";
 import sensor_data from "./sensor_data.route.js";
 
+import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
+import complaintHandlingRouter from "./complaintHandling.route.js";
+import customerServiceRequestRouter from "./customerServiceRequest.route.js";
+
+
 const router = Express.Router();
 
 router.use("/", mainRouter);
@@ -24,6 +29,11 @@ router.use("/assigns", techAssignRouter)
 router.use("/marketplace", marketplaceRouter);
 router.use('/customerOrderRequests', customerOrderRequestRouter);
 router.use("/sensor_data", sensor_data);
+
+
+router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
+router.use('/complaintHandling', complaintHandlingRouter);
+router.use('/customerServiceRequest', customerServiceRequestRouter);
 
 
 export default router;
