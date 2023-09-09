@@ -28,6 +28,8 @@ const Device = db.define("device", {
     },
     relay_unit_id: {
         type: DataTypes.INTEGER,
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
     },
 });
 

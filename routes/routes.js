@@ -9,6 +9,8 @@ import deviceRouter from "./device.route.js";
 import techAssignRouter from "./techAssigns.route.js";
 import marketplaceRouter from "./marketPlace.route.js";
 import customerOrderRequestRouter from "./customerOrderRequest.route.js";
+import sensor_data from "./sensor_data.route.js";
+
 import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
@@ -24,12 +26,14 @@ router.use("/places/rooms", roomsRouter);
 router.use("/devices", deviceRouter);
 router.use("/payment", paymentRouter);
 router.use("/assigns", techAssignRouter)
-router.use("/marketplace",marketplaceRouter);
+router.use("/marketplace", marketplaceRouter);
 router.use('/customerOrderRequests', customerOrderRequestRouter);
+router.use("/sensor_data", sensor_data);
+
+
 router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
 router.use('/customerServiceRequest', customerServiceRequestRouter);
-
 
 
 export default router;
