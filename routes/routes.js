@@ -14,7 +14,7 @@ import sensor_data from "./sensor_data.route.js";
 import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
-
+import chatRouter from "./chat.route.js";
 
 const router = Express.Router();
 
@@ -34,6 +34,7 @@ router.use("/sensor_data", sensor_data);
 router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
 router.use('/customerServiceRequest', customerServiceRequestRouter);
+router.use('/chat', chatRouter);
 
 
 export default router;
