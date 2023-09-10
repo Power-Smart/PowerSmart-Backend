@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import crypto from "crypto-js";
 import User from "../models/user.model.js";
 import Customer from "../models/customer.model.js";
+import qs from "querystring";
+import Payment from "../models/payment.model.js";
 dotenv.config();
 
 export const getOrdersForCustomer = async (req, res) => {
@@ -70,11 +72,58 @@ export const createOrder = async (req, res) => {
 };
 
 export const checkoutPayment = async (req, res) => {
-    const { merchant_id, order_id, payhere_amount, payhere_currency, status_code, md5sig } = req.body;
-    const hash = createHash(merchant_id, order_id, payhere_amount, payhere_currency);
-
-    if (hash === md5sig && status_code === 2) {
-        //  update payment in tables
+    const { merchant_id, order_id, payment_id, payhere_amount, payhere_currency, status_code, md5sig, custom_1, custom_2, method } = req.body;
+    const hash = createHash(merchant_id, order_id, payhere_amount, payhere_currency, status_code);
+    const places = custom_1.split(',');
+    if (hash === md5sig && +status_code === 2) {
+        if (encryptPlaceDetails(places) === custom_2) {
+            try {
+                const newPayment = await Payment.create({
+                    payhere_id: payment_id,
+                    method,
+                    amount: payhere_amount,
+                    currency: payhere_currency,
+                    type: "customer",
+                    status: "success",
+                    user_id: +order_id,
+                });
+                await Order.update({
+                    is_paid: true,
+                    payment_id: newPayment.payment_id
+                }, {
+                    where: {
+                        customer_id: +order_id,
+                        is_paid: false,
+                        payment_id: null,
+                        place_id: places
+                    }
+                });
+                res.status(200).send();
+            } catch (error) {
+                console.log(error);
+                res.status(500).send();
+            }
+        } else {
+            try {
+                const newPayment = await Payment.create({
+                    payhere_id: payment_id,
+                    method,
+                    amount: payhere_amount,
+                    currency: payhere_currency,
+                    type: "customer",
+                    status: "unauthorized",
+                    user_id: +order_id,
+                });
+                res.status(403).send();
+            } catch (error) {
+                console.log(error);
+                res.status(500).send();
+            }
+        }
+    }
+    else {
+        console.log('payment failed');
+        res.status(500).send();
     }
 }
 
@@ -121,18 +170,22 @@ export const calTotal = async (req, res) => {
             }
         });
         const total = orders.reduce((acc, item) => acc + item.dataValues.quantity * item.dataValues.item.price, 0)
-        res.status(200).json({ total });
+        res.status(200).json({ total, places });
     } catch (error) {
-        // console.log(error);
         res.status(500).json({ message: error.message });
     }
 }
 
 
-function createHash(merchant_id, order_id, amount, currency) {
+function createHash(merchant_id, order_id, amount, currency, status_code) {
     const merchant_secret = process.env.MERCHANT_SECRET;
     const hashed_secret = crypto.MD5(merchant_secret).toString().toUpperCase();
-    let amountFormated = parseFloat(amount).toLocaleString('en-us', { minimumFractionDigits: 2 }).replaceAll(',', '');
-    let hash = crypto.MD5(merchant_id + order_id + amountFormated + currency + hashed_secret).toString().toUpperCase();
+    let hash = crypto.MD5(`${merchant_id}${order_id}${amount}${currency}${status_code}${hashed_secret}`).toString().toUpperCase();
     return hash;
+}
+
+function encryptPlaceDetails(placeArray) {
+    const merchant_secret = process.env.MERCHANT_SECRET;
+    const hashStr = `${placeArray.join('')}${merchant_secret}`;
+    return crypto.SHA1(hashStr).toString().toUpperCase();
 }
