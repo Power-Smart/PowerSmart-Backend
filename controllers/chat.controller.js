@@ -6,8 +6,6 @@ export const getChatHistoryOfCustomerTechSupportSenderMsg = async (req, res) => 
         const customerID = parseInt(req.params.customerID);
         const techSupportID = parseInt(req.params.techSupportID);
 
-        console.log(customerID, techSupportID);
-
         const chatHistory = await Chat.findAll({
             where: {
                 sender_id: customerID,
@@ -21,12 +19,11 @@ export const getChatHistoryOfCustomerTechSupportSenderMsg = async (req, res) => 
     }
 };
 
+
 export const getChatHistoryOfCustomerTechSupportReceiverMsg = async (req, res) => {
     try {
         const customerID = parseInt(req.params.customerID);
         const techSupportID = parseInt(req.params.techSupportID);
-
-        console.log(customerID, techSupportID);
 
         const chatHistory = await Chat.findAll({
             where: {
@@ -41,3 +38,20 @@ export const getChatHistoryOfCustomerTechSupportReceiverMsg = async (req, res) =
     }
 };
 
+
+export const sendMsgToTechSupportByCustomer = async (req, res) => {
+    try {
+        const { customerID, techSupportID, message } = req.body;
+
+        const addedNewChat = await Chat.create({
+            sender_id: customerID,
+            receiver_id: techSupportID,
+            message: message,
+            is_read: false,
+        });
+        res.status(201).json(addedNewChat);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
