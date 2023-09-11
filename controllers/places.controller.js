@@ -2,6 +2,7 @@ import Place from "../models/place.model.js";
 import CustomerPlace from "../models/customerPlace.model.js";
 import Room from "../models/room.model.js";
 import sequelize from "../models/index.js";
+import SensorData from "../models/sensorData.model.js";
 
 export const getPlaces = async (req, res) => {
     const userID = req.params.id;
@@ -117,3 +118,45 @@ export const updatePlace = async (req, res) => {
         res.status(500).send("error updating place");
     }
 };
+
+export const getPlacesAndRooms = async (req, res) => {
+    const { userID } = req.params;
+    try {
+        const customerPlaces = await CustomerPlace.findAll({
+            where: {
+                user_id: userID,
+                access_level: 1,
+            },
+            attributes: ["place_id"],
+        });
+        const places = await Place.findAll({
+            where: {
+                place_id: customerPlaces.map((place) => place.place_id),
+            },
+        });
+        const rooms = await Room.findAll({
+            where: {
+                place_id: places.map((place) => place.place_id),
+            },
+            attributes: [
+                "place_id",
+                [sequelize.fn("COUNT", sequelize.col("room_id")), "room_count"],
+            ],
+            group: ["place_id"],
+        });
+        places.forEach((place) => {
+            const count = rooms.filter(
+                (room) => room.place_id === place.place_id
+            );
+            if (count.length === 0) {
+                place.dataValues.room_count = 0;
+            } else {
+                place.dataValues.room_count = count[0].dataValues.room_count;
+            }
+        });
+        res.send(places);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("error finding places");
+    }
+}
