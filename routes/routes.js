@@ -6,6 +6,7 @@ import placesRouter from "./places.route.js";
 import roomsRouter from "./room.route.js";
 import paymentRouter from "./payment.route.js";
 import deviceRouter from "./device.route.js";
+import techSupportRouter from './techSupport.route.js'
 
 const router = Express.Router();
 
@@ -16,5 +17,7 @@ router.use("/places", placesRouter);
 router.use("/places/rooms", roomsRouter);
 router.use("/devices", deviceRouter);
 router.use("/payment", paymentRouter);
+router.use("/techSupport", techSupportRouter);
+
 
 export default router;
