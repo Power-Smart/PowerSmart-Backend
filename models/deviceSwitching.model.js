@@ -4,6 +4,8 @@ import { DataTypes } from "sequelize";
 const DeviceSwitching = db.define("device_switching", {
     device_id: {
         type: DataTypes.INTEGER,
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
     },
     switch_status: {
         type: DataTypes.BOOLEAN,

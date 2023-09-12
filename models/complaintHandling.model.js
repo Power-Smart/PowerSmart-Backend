@@ -1,28 +1,36 @@
-import db from "../models/index.js";   
+import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const Chat = db.define("chat", {
-    chat_id: {
+const ComplaintHandling = db.define("complaint_handling", {
+    complaint_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    sender_id: {
+    customer_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    receiver_id: {
+    assign_tech_support_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    message: {
+    description: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    is_read: {
+    date: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    is_solve: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-    }
+    },
+    comment: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 });
 
-export default Chat;
+export default ComplaintHandling;
