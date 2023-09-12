@@ -15,17 +15,25 @@ export const getTechSupportUser = async (req, res) => {
 
 export const updateTechSupportProfile = async (req, res) => {
     const id = req.params.techSupportID;
-    const { first_name, last_name } = req.body;
+    const { first_name, last_name, tel_no } = req.body;
 
     try {
-        const customer = await TechSupport.findByPk(id);
-        // customer.tel_no = tel_no;
-        await customer.save();
+        const techSupport = await TechSupport.findByPk(id);
+        if (!techSupport) {
+            return res.status(404).send("TechSupport not found");
+        }
+        techSupport.tel_no = tel_no;
+        await techSupport.save();
+
         const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
         user.first_name = first_name;
         user.last_name = last_name;
         await user.save();
-        res.status(200).send("customer");
+
+        res.status(200).send(techSupport);
     } catch (error) {
         console.log(error);
         res.status(500).send("Error updating profile");
