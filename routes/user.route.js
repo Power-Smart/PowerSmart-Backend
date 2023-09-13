@@ -3,7 +3,7 @@ import {
     getUser,
     saveProfile,
     updateCustomerProfile,
-    completeCustomerProfile
+    completeCustomerProfile,
 } from "../controllers/user.controller.js";
 import { picDelete, profileUpload } from "../config/multer.config.js";
 
