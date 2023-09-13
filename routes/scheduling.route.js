@@ -4,6 +4,6 @@ import { createSchedule, deleteSchedule, getSchedules, updateSchedule } from "..
 const router = Express.Router();
 
 router.get("/get_schedules/:userId/:deviceId", getSchedules);
-router.post("/create", createSchedule);
+router.post("/create/:userId", createSchedule);
 
 export default router;

@@ -51,16 +51,14 @@ export const getSchedules = async (req, res) => {
 }
 
 export const createSchedule = async (req, res) => {
-
     try {
-        const { scheduleDetails, deviceDetails } = req.body
-
-        if (_.isNull(scheduleDetails) || _.isNull(deviceDetails)) {
+        const { userId } = req.params;
+        if (_.isNull(req.body) || _.isEmpty(req.body)) {
             throw new Error("Cannot process. Empty body");
         }
-
         const {
             name,
+            switch_status,
             status,
             startTime,
             endTime,
@@ -69,9 +67,13 @@ export const createSchedule = async (req, res) => {
             automationOverride,
             manualOverride,
             scheduleOverride,
-            userId,
-            placeId
-        } = scheduleDetails;
+            placeId,
+            deviceID
+        } = req.body;
+
+        const deviceDetails = {
+            [deviceID]: switch_status,
+        }
 
         const scheduleDetailsArr = {
             name,
@@ -87,81 +89,61 @@ export const createSchedule = async (req, res) => {
             place_id: placeId
         };
         const newSchedule = await Schedule.create(scheduleDetailsArr);
-
         const newScheduleId = newSchedule.dataValues.schedule_id;
 
-        try {
-            Object.entries(deviceDetails).forEach(([key, value]) => {
-                const deviceScheduleInsertArray = {
-                    device_id: key,
-                    schedule_id: newScheduleId,
-                    swith_status: value
-                }
-
-                const deviceScheduleInsertResult = DeviceSchedule.create(deviceScheduleInsertArray);
-            });
-
-            if (_.isNull(deviceScheduleInsertResult)) {
-                throw new Error(ISL);
-            }
-
-        } catch (error) {
-            throw new Error(ISL);
-        }
+        const deviceScheduleInsertResult = await DeviceSchedule.create({
+            device_id: deviceID,
+            schedule_id: newScheduleId,
+            switch_status
+        });
 
         const placeTimeZoneResult = await Place.findOne({
-            attributes: ['timeZone'],
+            attributes: ['time_zone'],
             where: {
                 place_id: placeId
             }
         });
 
-        const placeTimeZone = placeTimeZoneResult;
+        const placeTimeZone = placeTimeZoneResult.dataValues.time_zone;
 
         const cronServerUrl = `${cronServer}/create`;
 
         const requestData = {
             scheduleId: newScheduleId,
-            startTime: startTime,
-            endTime: endTime,
+            startTime,
+            endTime,
             startDay: ((day) => (day === 'mon' ? 1 : day === 'tue' ? 2 : day === 'wed' ? 3 : day === 'thu' ? 4 : day === 'fri' ? 5 : day === 'sat' ? 6 : 7))(startDay),
             endDay: ((day) => (day === 'mon' ? 1 : day === 'tue' ? 2 : day === 'wed' ? 3 : day === 'thu' ? 4 : day === 'fri' ? 5 : day === 'sat' ? 6 : 7))(endDay),
             switchingScheme: deviceDetails,
             timeZone: placeTimeZone
         };
 
+        const responseData = {
+            ...deviceScheduleInsertResult.dataValues,
+            schedule: newSchedule.dataValues
+        }
         axios.post(cronServerUrl, requestData).then(
             (response) => {
-                console.log(response);
-                res.status(200).json(response.data);
-            }
-        ).catch(
-            (error) => {
+                console.log(response.data);
+                res.status(200).json(responseData);
+            })
+            .catch(async (error) => {
                 console.log(error);
-
-                const deviceScheduleIDeleteResult = DeviceSchedule.destroy({
+                await DeviceSchedule.destroy({
                     where: {
                         schedule_id: newScheduleId
                     }
                 });
-
-                const sheduleIDeleteResult = Schedule.destroy({
+                await Schedule.destroy({
                     where: {
                         schedule_id: newScheduleId
                     }
                 });
-
                 throw new Error(ISL);
-            }
-        );
-
-
+            });
     } catch (error) {
-
-        if (error.message === ISL) {
-            res.status(500).json(error.message);
-        }
-
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -175,28 +157,26 @@ export const deleteSchedule = async (req, res) => {
 
         const cronServerUrl = `${cronServer}/delete`;
 
-        axios.post(cronServerUrl, requestData).then(
-            (response) => {
-                console.log(response);
+        axios.post(cronServerUrl, requestData).then(async (response) => {
+            console.log(response);
 
-                const deviceScheduleIDeleteResult = DeviceSchedule.destroy({
-                    where: {
-                        schedule_id: scheduleId
-                    }
-                });
+            await DeviceSchedule.destroy({
+                where: {
+                    schedule_id: scheduleId
+                }
+            });
 
-                const sheduleIDeleteResult = Schedule.destroy({
-                    where: {
-                        schedule_id: scheduleId
-                    }
-                });
+            await Schedule.destroy({
+                where: {
+                    schedule_id: scheduleId
+                }
+            });
 
-                res.status(200).json(response.data);
-            }
+            res.status(200).json(response.data);
+        }
         ).catch(
             (error) => {
                 console.log(error);
-
                 throw new Error(ISL);
             }
         );

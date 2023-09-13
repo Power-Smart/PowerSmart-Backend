@@ -5,7 +5,7 @@ const Schedule = db.define("schedule", {
     schedule_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        // autoIncrement: true,
+        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING,
