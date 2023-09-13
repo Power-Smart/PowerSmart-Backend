@@ -99,3 +99,8 @@ export const toggleDevice = async (req, res) => {
 
 }
 
+export const deviceSwitch = async (req, res) => {
+    const switchingScheme = req.body;
+    console.log("switchingScheme : ", switchingScheme);
+    res.status(200).send("toggled");
+}
