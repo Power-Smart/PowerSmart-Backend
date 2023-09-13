@@ -25,3 +25,23 @@ export const getComplaintHandling = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
+
+export const acceptOrRejectComplaint = async (req, res) => {
+    const { complaint_id, is_solve, comment } = req.body;
+    try {
+        const complaintHandlingResult = await complaintHandling.update(
+            {
+                is_solve: is_solve,
+                comment: comment,
+            },
+            {
+                where: {
+                    complaint_id: complaint_id,
+                },
+            }
+        );
+        res.status(200).json(complaintHandlingResult);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
