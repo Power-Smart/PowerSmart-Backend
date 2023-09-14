@@ -15,6 +15,30 @@ dotenv.config();
 const cronServer = process.env.CRON_SERVER;
 const ISL = "internal server error";
 
+export const toggleActivation = async (req, res) => {
+    try {
+        const cronServerUrl = `${cronServer}/toggle_activation`;
+        const { scheduleId } = req.params;
+        const { status } = req.body;
+
+        const response = await axios.post(cronServerUrl, { scheduleId, status });
+        if (response.status === 200) {
+            await Schedule.update({ status }, {
+                where: {
+                    schedule_id: scheduleId
+                }
+            });
+            console.log(response.data);
+            res.status(200).json(response.data);
+        } else {
+            throw new Error("Cron server error");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error.message);
+    }
+}
+
 export const getSchedules = async (req, res) => {
     try {
         const { userId, deviceId } = req.params;
