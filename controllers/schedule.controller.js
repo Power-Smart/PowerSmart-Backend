@@ -150,43 +150,37 @@ export const createSchedule = async (req, res) => {
 export const deleteSchedule = async (req, res) => {
 
     try {
+        const { userId, scheduleId } = req.params;
 
-        const { scheduleId } = req.body;
-
-        const requestData = req.body;
+        const requestData = { scheduleId };
 
         const cronServerUrl = `${cronServer}/delete`;
 
         axios.post(cronServerUrl, requestData).then(async (response) => {
-            console.log(response);
-
-            await DeviceSchedule.destroy({
-                where: {
-                    schedule_id: scheduleId
-                }
-            });
-
-            await Schedule.destroy({
-                where: {
-                    schedule_id: scheduleId
-                }
-            });
-
-            res.status(200).json(response.data);
+            if (response.status === 200) {
+                await DeviceSchedule.destroy({
+                    where: {
+                        schedule_id: scheduleId
+                    }
+                });
+                await Schedule.destroy({
+                    where: {
+                        schedule_id: scheduleId
+                    }
+                });
+                console.log(response.data);
+                res.status(200).json(response.data);
+            } else {
+                throw new Error("Cron server error");
+            }
         }
         ).catch(
             (error) => {
-                console.log(error);
-                throw new Error(ISL);
+                res.status(500).json(error.message);
             }
         );
-
-
-
     } catch (error) {
-        if (error.message === ISL) {
-            res.status(500).json(error.message);
-        }
+        res.status(500).json(error.message);
     }
 }
 

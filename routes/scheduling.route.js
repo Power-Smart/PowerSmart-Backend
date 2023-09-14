@@ -5,5 +5,6 @@ const router = Express.Router();
 
 router.get("/get_schedules/:userId/:deviceId", getSchedules);
 router.post("/create/:userId", createSchedule);
+router.delete("/delete/:userId/:scheduleId", deleteSchedule);
 
 export default router;
