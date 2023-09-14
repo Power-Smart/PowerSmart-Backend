@@ -15,10 +15,6 @@ dotenv.config();
 const cronServer = process.env.CRON_SERVER;
 const ISL = "internal server error";
 
-function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export const getSchedules = async (req, res) => {
     try {
         const { userId, deviceId } = req.params;
@@ -150,7 +146,7 @@ export const createSchedule = async (req, res) => {
 export const deleteSchedule = async (req, res) => {
 
     try {
-        const { userId, scheduleId } = req.params;
+        const { scheduleId } = req.params;
 
         const requestData = { scheduleId };
 
@@ -187,13 +183,15 @@ export const deleteSchedule = async (req, res) => {
 export const updateSchedule = async (req, res) => {
 
     try {
+        const { userId, scheduleId } = req.params;
 
-        const { scheduleDetails, deviceDetails } = req.body
+        if (_.isNull(req.body) || _.isEmpty(req.body)) {
+            throw new Error("Cannot process. Empty body");
+        }
 
         const {
-            sceduleId,
             name,
-            status,
+            switch_status,
             startTime,
             endTime,
             startDay,
@@ -201,14 +199,16 @@ export const updateSchedule = async (req, res) => {
             automationOverride,
             manualOverride,
             scheduleOverride,
-            userId,
-            placeId
-        } = scheduleDetails;
+            placeId,
+            deviceID
+        } = req.body;
+
+        const switchingScheme = {
+            [deviceID]: switch_status,
+        }
 
         const scheduleDetailsArr = {
-            schedule_id: sceduleId,
             name: name,
-            status: status,
             start_time: startTime,
             end_time: endTime,
             start_day: startDay,
@@ -221,55 +221,52 @@ export const updateSchedule = async (req, res) => {
         };
 
         const placeTimeZoneResult = await Place.findOne({
-            attributes: [],
+            attributes: ['time_zone'],
             where: {
                 place_id: placeId
             }
         });
 
-        const placeTimeZone = placeTimeZoneResult;
+        const timeZone = placeTimeZoneResult.dataValues.time_zone;
 
-        const cronServerUrl = "https://powersmart-cron-server.onrender.com/update";
+        const cronServerUrl = `${cronServer}/update`;
 
         const requestData = {
-            scheduleId: scheduleIdGuessedFinal,
-            startTime: startTime,
-            endTime: endTime,
+            scheduleId,
+            startTime,
+            endTime,
             startDay: ((day) => (day === 'mon' ? 1 : day === 'tue' ? 2 : day === 'wed' ? 3 : day === 'thu' ? 4 : day === 'fri' ? 5 : day === 'sat' ? 6 : 7))(startDay),
             endDay: ((day) => (day === 'mon' ? 1 : day === 'tue' ? 2 : day === 'wed' ? 3 : day === 'thu' ? 4 : day === 'fri' ? 5 : day === 'sat' ? 6 : 7))(endDay),
-            switchingScheme: deviceDetails,
-            timeZone: placeTimeZone
+            switchingScheme,
+            timeZone
         };
 
 
         axios.post(cronServerUrl, requestData).then(
-            (response) => {
-                console.log(response);
+            async (response) => {
+                // console.log(response);
+                await Schedule.update(
+                    scheduleDetailsArr,
+                    {
+                        where: {
+                            schedule_id: scheduleId
+                        },
+                    });
 
-                const deviceScheduleIDeleteResult = DeviceSchedule.destroy({
-                    where: {
-                        schedule_id: scheduleId
-                    }
-                });
-
-                const sheduleIDeleteResult = Schedule.destroy({
-                    where: {
-                        schedule_id: scheduleId
-                    }
-                });
-
+                await DeviceSchedule.update({ switch_status },
+                    {
+                        where: {
+                            schedule_id: scheduleId
+                        }
+                    });
                 res.status(200).json(response.data);
             }
         ).catch(
             (error) => {
-                console.log(error);
-
+                console.log(error.message);
                 throw new Error(ISL);
             }
         );
-
-
-
     } catch (error) {
         res.status(500).json(error.message);
     }
