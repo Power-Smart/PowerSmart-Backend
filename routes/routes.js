@@ -15,6 +15,7 @@ import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
 import chatRouter from "./chat.route.js";
+import customerRouter from "./customer.route.js";
 
 const router = Express.Router();
 
@@ -36,6 +37,9 @@ router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
 router.use('/customerServiceRequest', customerServiceRequestRouter);
 router.use('/chat', chatRouter);
+
+router.use('/customer', customerRouter);
+
 
 
 export default router;
