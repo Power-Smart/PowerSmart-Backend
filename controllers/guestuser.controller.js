@@ -14,3 +14,19 @@ export const addGuestUserSuggest = async (req, res) => {
         console.log(error);
     }
 };
+
+export const getGuestUserSuggest = async (req, res) => {
+    try {
+        const {customerID} = req.params;
+        console.log("customerID:",customerID)
+
+        const guestUserSuggests = await GuestUser.findOne({
+            where:{
+                customer_id:customerID
+            }
+        });
+        res.send(guestUserSuggests);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
