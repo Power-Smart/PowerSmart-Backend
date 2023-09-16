@@ -28,7 +28,6 @@ import DeviceSwitching from "./deviceSwitching.model.js";
 import TechSupportPlace from "./techSupportPlace.model.js"
 import OwnedItem from "./ownedItem.model.js";
 
-import Marketplace from "./marketplace.model.js";
 import CustomerOrderRequest from "./customerOrderRequest.model.js";
 import TechSupportRating from "./techSupportRating.model.js";
 import ComplaintHandling from "./complaintHandling.model.js";
