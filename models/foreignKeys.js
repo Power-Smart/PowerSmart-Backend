@@ -35,8 +35,8 @@ import ComplaintHandling from "./complaintHandling.model.js";
 import CustomerServiceRequest from "./customerServiceRequest.model.js";
 
 
-ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
-Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id", as: "complaintHandling" });
+ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id",  });
+Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id",  });
 
 ComplaintHandling.belongsTo(TechSupport, { foreignKey: "user_id", as: "techSupport" });
 TechSupport.hasMany(ComplaintHandling, { foreignKey: "tech_support_id", as: "complaintHandling" });
