@@ -11,6 +11,9 @@ import techAssignRouter from "./techAssigns.route.js";
 import marketplaceRouter from "./marketPlace.route.js";
 import customerOrderRequestRouter from "./customerOrderRequest.route.js";
 import sensor_data from "./sensor_data.route.js";
+
+import scheduling from "./scheduling.route.js";
+
 import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
@@ -31,7 +34,7 @@ router.use("/assigns", techAssignRouter)
 router.use("/marketplace", marketplaceRouter);
 router.use('/customerOrderRequests', customerOrderRequestRouter);
 router.use("/sensor_data", sensor_data);
-
+router.use("/scheduling", scheduling)
 
 router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);

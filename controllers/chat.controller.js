@@ -56,6 +56,7 @@ export const sendMsgToTechSupportByCustomer = async (req, res) => {
     }
 };
 
+
 export const sendMsgToCustomerByTechSupport = async (req, res) => {
     try {
         const { senderID, receiverID, message } = req.body;

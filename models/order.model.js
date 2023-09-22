@@ -22,6 +22,7 @@ const Order = db.define("order", {
     },
     is_paid: {
         type: DataTypes.BOOLEAN,
+        defaultValue: false,
         allowNull: false,
     },
     place_id: {
