@@ -11,6 +11,22 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
+class States {
+    constructor() {
+        this.stateList = {};
+        this.addState = this.addState.bind(this);
+    }
+
+    addState(roomId, state){
+        this.stateList[roomId] = state;
+    }
+
+    getState(roomId){
+        return this.stateList[roomId]?this.stateList[roomId]:false;
+    }
+}
+
+const states = new States();
 
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
