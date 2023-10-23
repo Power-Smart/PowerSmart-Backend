@@ -71,6 +71,38 @@ export const createOrder = async (req, res) => {
     }
 };
 
+export const yearlySubscription = async (req, res) => {
+    const { merchant_id, order_id, payment_id, payhere_amount, payhere_currency, status_code, md5sig, method } = req.body;
+    const hash = createHash(merchant_id, order_id, payhere_amount, payhere_currency, status_code);
+    if (hash === md5sig && +status_code === 2) {
+        try {
+            const newPayment = await Payment.create({
+                payhere_id: payment_id,
+                method,
+                amount: payhere_amount,
+                currency: payhere_currency,
+                type: "subscription",
+                status: "success",
+                user_id: +order_id,
+            });
+            await Customer.update({
+                year_subscription: new Date().toISOString()
+            }, {
+                where: {
+                    user_id: +order_id
+                }
+            })
+            res.status(200).send();
+        } catch (error) {
+            console.log(error);
+            res.status(500).send();
+        }
+    } else {
+        console.log('payment failed');
+        res.status(500).send();
+    }
+}
+
 export const checkoutPayment = async (req, res) => {
     const { merchant_id, order_id, payment_id, payhere_amount, payhere_currency, status_code, md5sig, custom_1, custom_2, method } = req.body;
     const hash = createHash(merchant_id, order_id, payhere_amount, payhere_currency, status_code);
