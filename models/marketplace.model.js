@@ -1,8 +1,8 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const RelayUnit = db.define("relay_unit", {
-    relay_unit_id: {
+const Marketplace = db.define("marketplace", {
+    item_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -10,18 +10,21 @@ const RelayUnit = db.define("relay_unit", {
     name: {
         type: DataTypes.STRING,
     },
+    price: {
+        type: DataTypes.FLOAT,
+    },
     description: {
-        type: DataTypes.TEXT,
-    },
-    category: {
-        type: DataTypes.CHAR(1),
-    },
-    status: {
         type: DataTypes.STRING,
     },
-    place_id: {
+    quantity: {
         type: DataTypes.INTEGER,
+    },
+    item_img: {
+        type: DataTypes.STRING,
+    },
+    is_build_in_package: {
+        type: DataTypes.BOOLEAN,
     },
 });
 
-export default RelayUnit;
+export default Marketplace;

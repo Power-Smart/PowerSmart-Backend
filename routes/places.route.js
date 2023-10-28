@@ -3,6 +3,7 @@ import {
     getPlace,
     addPlace,
     updatePlace,
+    getPlacesAndRooms,
 } from "../controllers/places.controller.js";
 import Express from "express";
 
@@ -14,6 +15,7 @@ router.get("/place/:placeID", getPlace);
 router.post("/add", addPlace);
 router.patch("/update/:placeID", updatePlace);
 
+router.get("/placesandrooms/:user_id", getPlacesAndRooms)
 
 router.get("/hello", (req, res) => {
     res.send("hello");
