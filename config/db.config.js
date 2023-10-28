@@ -14,6 +14,11 @@ const dbConfig = {
         acquire: 30000,
         idle: 10000,
     },
+    dialectOptions: {
+        ssl: {
+            require: true,
+        },
+    },
 };
 
 export default dbConfig;
