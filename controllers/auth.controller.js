@@ -55,51 +55,51 @@ export const login = async (req, res) => {
         }).then(async (user) => {
             if (!user) {
                 return res
-                    .status(400)
+                    .status(200)
                     .json({ message: "Invalid username or password" });
-            }
+            } else {
+                const passwordMatch = await bcrypt.compare(password, user.password);
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            if (!passwordMatch) {
-                return res
-                    .status(400)
-                    .json({ message: "Invalid username or password" });
-            }
-
-            const token = jwt.sign(
-                {
-                    email: user.email,
-                    id: user.user_id,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    role: user.role,
-                },
-                process.env.ACCESS_TOKEN_SECRET,
-                {
-                    expiresIn: "1h",
+                if (!passwordMatch) {
+                    return res
+                        .status(200)
+                        .json({ message: "Invalid username or password" });
+                } else {
+                    const token = jwt.sign(
+                        {
+                            email: user.email,
+                            id: user.user_id,
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            role: user.role,
+                        },
+                        process.env.ACCESS_TOKEN_SECRET,
+                        {
+                            expiresIn: "1h",
+                        }
+                    );
+                    const refreshToken = jwt.sign(
+                        { email: user.email },
+                        process.env.REFRESH_TOKEN_SECRET,
+                        {
+                            expiresIn: "1d",
+                        }
+                    );
+                    await User.update(
+                        { refresh_token: refreshToken },
+                        { where: { email: email } }
+                    );
+                    return res.json({
+                        id: user.user_id,
+                        role: user.role,
+                        email: user.email,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        token,
+                        refreshToken,
+                    });
                 }
-            );
-            const refreshToken = jwt.sign(
-                { email: user.email },
-                process.env.REFRESH_TOKEN_SECRET,
-                {
-                    expiresIn: "1d",
-                }
-            );
-            await User.update(
-                { refresh_token: refreshToken },
-                { where: { email: email } }
-            );
-            return res.json({
-                id: user.user_id,
-                role: user.role,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                token,
-                refreshToken,
-            });
+            }
         });
     } catch (e) {
         res.status(500).send();
