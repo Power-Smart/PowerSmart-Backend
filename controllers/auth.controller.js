@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import Customer from "../models/customer.model.js";
 
 dotenv.config();
 
@@ -22,7 +23,14 @@ export const register = async (req, res) => {
                     last_name: last_name,
                     role: 1,
                 });
+
                 await newUser.save();
+                const newCustomer = await Customer.create({
+                    user_id: newUser.dataValues.user_id,
+                    profile_pic: "https://i.imgur.com/6VBx3io.png",
+                });
+
+                await newCustomer.save();
                 res.status(201).json({
                     message: "User created successfully",
                     user: {
