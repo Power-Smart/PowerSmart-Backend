@@ -29,7 +29,6 @@ export const register = async (req, res) => {
                     user_id: newUser.dataValues.user_id,
                     profile_pic: "https://i.imgur.com/6VBx3io.png",
                 });
-
                 await newCustomer.save();
                 res.status(201).json({
                     message: "User created successfully",
