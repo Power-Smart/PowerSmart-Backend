@@ -16,7 +16,8 @@ const dbConfig = {
     },
     dialectOptions: {
         ssl: {
-            require: false,
+            require: true,
+            rejectUnauthorized: false,
         },
     },
 };
