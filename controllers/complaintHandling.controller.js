@@ -27,11 +27,12 @@ export const getComplaintHandling = async (req, res) => {
 };
 
 export const acceptOrRejectComplaint = async (req, res) => {
-    const { complaint_id, is_solve, comment } = req.body;
+    const { complaint_id, status, comment } = req.body;
+    console.log(req.body);
     try {
         const complaintHandlingResult = await complaintHandling.update(
             {
-                is_solve: is_solve,
+                is_solve: status,
                 comment: comment,
             },
             {
