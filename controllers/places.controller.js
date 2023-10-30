@@ -67,7 +67,7 @@ export const getPlace = async (req, res) => {
 };
 
 export const addPlace = async (req, res) => {
-    const { id, name, address, postal_code, place_type, country, city } =
+    const { id, name, address, postal_code, place_type, country, city, time_zone } =
         req.body;
     console.log(req.body);
     try {
