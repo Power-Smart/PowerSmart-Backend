@@ -20,6 +20,7 @@ import customerServiceRequestRouter from "./customerServiceRequest.route.js";
 import chatRouter from "./chat.route.js";
 import guestUserRouter from './guestUser.route.js'
 import customerRouter from "./customer.route.js";
+import notificationRouter from "./notifications.route.js"
 
 const router = Express.Router();
 
@@ -37,6 +38,7 @@ router.use('/customerOrderRequests', customerOrderRequestRouter);
 router.use("/sensor_data", sensor_data);
 router.use("/scheduling", scheduling);
 router.use('/access', accessRouter);
+router.use('/notifications', notificationRouter);
 
 router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
