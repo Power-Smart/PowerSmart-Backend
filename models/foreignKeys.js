@@ -1,6 +1,5 @@
 import Customer from "./customer.model.js";
 import User from "./user.model.js";
-import GuestUser from "./guestUser.model.js";
 import TechSupport from "./techSupport.model.js";
 import Chat from "./chat.model.js";
 import Message from "./message.model.js";
@@ -33,6 +32,13 @@ import CustomerOrderRequest from "./customerOrderRequest.model.js";
 import TechSupportRating from "./techSupportRating.model.js";
 import ComplaintHandling from "./complaintHandling.model.js";
 import CustomerServiceRequest from "./customerServiceRequest.model.js";
+
+import GuestUserSuggest from "./guestUserSuggest.model.js";
+import GuestUser from "./guestUser.model.js";
+
+// Define the association between the Customer and GuestUser models
+Customer.belongsTo(GuestUser, { foreignKey: "user_id", as: "guestUser" });
+GuestUser.hasOne(Customer, { foreignKey: "user_id", as: "customer" });
 
 
 ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id",  });
@@ -171,9 +177,7 @@ User.hasOne(Admin, { foreignKey: "user_id", as: "admin" });
 Customer.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.hasOne(Customer, { foreignKey: "user_id", as: "customer" });
 
-// Define the association between the GuestUser and User models
-GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });
-User.hasOne(GuestUser, { foreignKey: "guest_id", as: "guestUser" });
+
 
 // Define the association between the TechSupport and User models
 TechSupport.belongsTo(User, { foreignKey: "user_id", as: "user" });
@@ -225,3 +229,8 @@ Order.belongsTo(TechSupport, {
     as: "techSupport",
 });
 TechSupport.hasMany(Order, { foreignKey: "tech_support_id", as: "order" });
+
+
+// // Define the association between the GuestUser and User models
+// GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });
+// User.hasOne(GuestUser, { foreignKey: "guest_id", as: "guestUser" });
