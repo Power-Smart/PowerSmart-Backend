@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import fs from "fs";
 dotenv.config();
 
 const dbConfig = {
@@ -14,15 +13,6 @@ const dbConfig = {
         min: 0,
         acquire: 30000,
         idle: 10000,
-    },
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false,
-            ca: fs.readFileSync('./public/config/ssl/ca.crt').toString(),
-            key: fs.readFileSync('./public/config/ssl/postgresql.key').toString(),
-            cert: fs.readFileSync('./public/config/ssl/postgresql.crt').toString(),
-        },
     },
 };
 
