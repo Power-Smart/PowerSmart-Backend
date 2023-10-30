@@ -60,10 +60,10 @@ export const getRooms = async (req, res) => {
 export const addRoom = async (req, res) => {
     const { name, size, id, placeID, window_type, active_status, room_type } =
         req.body;
-
+    console.log(req.body);
     try {
         const room = await Room.create({
-            window_type: window_type,
+            window_type,
             is_active: active_status,
             size: size,
             type: room_type,
