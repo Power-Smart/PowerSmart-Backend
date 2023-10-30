@@ -45,13 +45,6 @@ TechSupport.hasMany(ComplaintHandling, { foreignKey: "tech_support_id", as: "com
 CustomerOrderRequest.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
 Customer.hasMany(CustomerOrderRequest, { foreignKey: "user_id", as: "customerOrderRequest" });
 
-
-
-
-
-
-
-
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
 Room.hasMany(InformUsage, { foreignKey: "room_id", as: "informUsage" });
@@ -222,3 +215,8 @@ Order.belongsTo(TechSupport, {
     as: "techSupport",
 });
 TechSupport.hasMany(Order, { foreignKey: "tech_support_id", as: "order" });
+
+TechSupportPlace.belongsTo(TechSupport, { foreignKey: "tech_support_id", as: "techSupport" });
+TechSupport.hasMany(TechSupportPlace, { foreignKey: "tech_support_id", as: "techSupportPlace" });
+TechSupportPlace.belongsTo(Place, { foreignKey: "place_id", as: "place" });
+Place.hasMany(TechSupportPlace, { foreignKey: "place_id", as: "techSupportPlace" });

@@ -11,7 +11,6 @@ import DeviceSwitching from "../models/deviceSwitching.model.js";
 import SensorUnit from "../models/sensorUnit.model.js";
 import SensorData from "../models/sensorData.model.js";
 import OwnedItem from "../models/ownedItem.model.js";
-
 import sequelize from "../models/index.js";
 
 export const assignedCustomers = async (req, res) => {
@@ -70,6 +69,42 @@ export const assignedPlacesByCustomer = async (req, res) => {
         res.status(200).json(assignedPlaces);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+}
+
+export const requestCustomer = async (req, res) => {
+    const { tech_support_id, place_id } = req.params;
+    try {
+        await TechSupportPlace.update({
+            access_type: 2,
+        }, {
+            where: {
+                tech_support_id: tech_support_id,
+                place_id: place_id,
+            },
+        });
+        res.status(200).json({ message: "Request Sent" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const cancelRequest = async (req, res) => {
+    const { tech_support_id, place_id } = req.params;
+    try {
+        await TechSupportPlace.update({
+            access_type: 0,
+        }, {
+            where: {
+                tech_support_id: tech_support_id,
+                place_id: place_id,
+            },
+        });
+        res.status(200).json({ message: "Request Cancelled" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
     }
 }
 
