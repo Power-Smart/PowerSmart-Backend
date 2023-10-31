@@ -5,6 +5,7 @@ const Customer = db.define("customer", {
     user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement:true
     },
     points: {
         type: DataTypes.INTEGER,

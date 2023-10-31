@@ -41,11 +41,29 @@ export const getChatHistoryOfCustomerTechSupportReceiverMsg = async (req, res) =
 
 export const sendMsgToTechSupportByCustomer = async (req, res) => {
     try {
-        const { customerID, techSupportID, message } = req.body;
+        const { senderID, receiverID, message } = req.body;
 
         const addedNewChat = await Chat.create({
-            sender_id: customerID,
-            receiver_id: techSupportID,
+            sender_id: senderID,
+            receiver_id: receiverID,
+            message: message,
+            is_read: false,
+        });
+        res.status(201).json(addedNewChat);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+export const sendMsgToCustomerByTechSupport = async (req, res) => {
+    try {
+        const { senderID, receiverID, message } = req.body;
+
+        const addedNewChat = await Chat.create({
+            sender_id: senderID,
+            receiver_id: receiverID,
             message: message,
             is_read: false,
         });
