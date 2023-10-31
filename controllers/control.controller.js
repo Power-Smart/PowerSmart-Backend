@@ -11,7 +11,6 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
-//wtf is this 
 class States {
     constructor() {
         this.stateList = {};
@@ -144,7 +143,7 @@ export const handleSensorData = async (req, res) => {
             }
 
             const thisPlace = (
-                await place.findOne({
+                await Place.findOne({
                     where: { place_id: thisRoom.place_id },
                 })
             ).dataValues;

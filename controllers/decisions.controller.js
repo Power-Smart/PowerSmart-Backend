@@ -45,7 +45,7 @@ export const getDecisions = async (decisionAlgoRequestData) => {
 
         if(currentRoomStatusValue < tobeRoomStatusValue - tobeRoomStatusValue*0.10){
             
-            
+                        
         }else if(currentRoomStatusValue > tobeRoomStatusValue + tobeRoomStatusValue*0.10){
 
         }else{
