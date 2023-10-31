@@ -13,6 +13,18 @@ export const getTechSupportView = async (req, res) => {
         });
 
         // Extract the user data from the nested JSON and send it back
+        const techSupportWithUserData = results.map(techSupport => {
+            return {
+                user_id: techSupport.user.user_id,
+                first_name: techSupport.user.first_name,
+                last_name: techSupport.user.last_name,
+                email: techSupport.user.email,
+                tel_no: techSupport.tel_no,
+                is_banned: techSupport.is_banned
+            };
+        });
+
+        res.status(200).json(techSupportWithUserData);
         
     } catch (error) {
         res.status(500).json({ message: error.message });
