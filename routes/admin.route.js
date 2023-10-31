@@ -3,7 +3,7 @@ import { getCustomerView } from "../controllers/adminCustomer.controller.js";
 import { getTechSupportView } from "../controllers/adminTechSupport.controller.js";
 import { getItemsView } from "../controllers/adminItems.controller.js";
 
-const router = Express.Router();
+const router = Express.Router(); //for backend routes (express)
 
 router.get("/customerView", getCustomerView);
 router.get("/techSupportView", getTechSupportView);
