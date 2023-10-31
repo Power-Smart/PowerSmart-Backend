@@ -44,20 +44,92 @@ export const getDecisions = async (decisionAlgoRequestData) => {
     if(_.isEmpty(scheduleDetails)){
 
         if(currentRoomStatusValue < tobeRoomStatusValue - tobeRoomStatusValue*0.10){
+
+            try {
+                await Promise.all(
+                    currentSwitchingDetails.map(async (element) => {
+                        
+                        let pushVar = {
+                            device_id: element.device_id,
+                            switch_status: Math.random() < 0.5
+                        }
+
+                        data.push(pushVar);
+                    })
+                );
+            } catch (error) {
+                return(
+                    "Error while processing elements: " + error.message
+                );
+            }
             
                         
         }else if(currentRoomStatusValue > tobeRoomStatusValue + tobeRoomStatusValue*0.10){
 
+            try {
+                await Promise.all(
+                    currentSwitchingDetails.map(async (element) => {
+                        
+                        let pushVar = {
+                            device_id: element.device_id,
+                            switch_status: Math.random() < 0.5
+                        }
+
+                        data.push(pushVar);
+                    })
+                );
+            } catch (error) {
+                return(
+                    "Error while processing elements: " + error.message
+                );
+            }
+
         }else{
 
+            try {
+                await Promise.all(
+                    currentSwitchingDetails.map(async (element) => {
+                        
+                        let pushVar = {
+                            device_id: element.device_id,
+                            switch_status: Math.random() < 0.5
+                        }
+
+                        data.push(pushVar);
+                    })
+                );
+            } catch (error) {
+                return(
+                    "Error while processing elements: " + error.message
+                );
+            }
         }  
 
     }else{
 
+        try {
+            await Promise.all(
+                currentSwitchingDetails.map(async (element) => {
+                    
+                    let pushVar = {
+                        device_id: element.device_id,
+                        switch_status: Math.random() < 0.5
+                    }
 
-    }
+                    data.push(pushVar);
+                })
+            );
+        } catch (error) {
+            return(
+                "Error while processing elements: " + error.message
+            );
+        }
 
+    }  
 
-    
+    return {
+        data: data,
+        status: 200
+    };
     
 }

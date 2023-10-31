@@ -6,6 +6,7 @@ import device_switching from "../models/deviceSwitching.model.js";
 import room from "../models/room.model.js";
 import Place from "../models/place.model.js";
 import schedule from "../models/schedule.model.js";
+import getDecisions from "../controllers/decisions.controller.js";
 import axios from "axios";
 import db from "../models/index.js";
 import _ from "lodash";
@@ -75,10 +76,13 @@ export const handleSensorData = async (req, res) => {
         // });
 
         //! model predictions api
-        const modelPredictions = await axios.post(
-            "/mlapi/getPredictions",
-            sensorDataArr
-        );
+        const modelPredictions = await await fetch('http://20.253.48.86:4001/relayswitch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(sensorDataArrSend)
+        });
 
         // const modelPredictions = {
         //     data: {
@@ -92,13 +96,13 @@ export const handleSensorData = async (req, res) => {
         // if (modelPredictions.status >= 200 && modelPredictions.status < 300) {
 
         if (!_.isNull(modelPredictions)) {
-            const { sensor_id, occupancy_rate, room_status, sent_time } =
+            const { sensor_id_prediction, occupancy_rate, room_status, sent_time } =
                 modelPredictions.data;
 
             const roomData = await sensor_unit.findOne({
                 //Can done via same query (1)
                 attributes: ["room_id"],
-                where: { sensor_unit_id: sensor_id },
+                where: { sensor_unit_id: sensor_id_prediction },
             });
 
             const roomId = roomData.dataValues.room_id;
@@ -208,20 +212,22 @@ export const handleSensorData = async (req, res) => {
             //     decisionAlgoRequestData
             // );
 
-            const decisions = {
-                data: [
-                    {
-                        device_id: 2,
-                        switch_status: Math.random() < 0.5
-                        }
-                        ,
-                    {
-                        device_id: 3,
-                        switch_status:Math.random() < 0.5
-                    },
-                ],
-                status: 200,
-            };
+            // const decisions = {
+            //     data: [
+            //         {
+            //             device_id: 2,
+            //             switch_status: Math.random() < 0.5
+            //             }
+            //             ,
+            //         {
+            //             device_id: 3,
+            //             switch_status:Math.random() < 0.5
+            //         },
+            //     ],
+            //     status: 200,
+            // };
+
+            const decisions = getDecisions(decisionAlgoRequestData);
 
             if (decisions.status >= 200 && decisions.status < 300) {
                 try {
