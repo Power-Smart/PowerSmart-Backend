@@ -11,6 +11,7 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
+//wtf is this 
 class States {
     constructor() {
         this.stateList = {};
@@ -59,6 +60,15 @@ export const handleSensorData = async (req, res) => {
 
         const newSensorData = await sensor_data.create(sensorDataArr);
 
+        const sensorDataArrSend = {
+            sensor_unit_id: sensorId,
+            co2_level: co2_level,
+            hummidity_level: hummidity_level,
+            temperature: temperature,
+            light_intensity: light_intensity,
+            pir_reading: pir_reading
+        }
+
         // newSensorData.save();
 
         // res.status(201).json({
@@ -66,30 +76,30 @@ export const handleSensorData = async (req, res) => {
         // });
 
         //! model predictions api
-        // const modelPredictions = await axios.post(
-        //     "/mlapi/getPredictions",
-        //     sensorDataArr
-        // );
+        const modelPredictions = await axios.post(
+            "/mlapi/getPredictions",
+            sensorDataArr
+        );
 
-        const modelPredictions = {
-            data: {
-                occupancy_rate: "medium",
-                room_status: "normal",
-                sent_time: new Date(),
-            },
-        };
+        // const modelPredictions = {
+        //     data: {
+        //         occupancy_rate: "medium",
+        //         room_status: "normal",
+        //         sent_time: new Date(),
+        //     },
+        // };
 
         //! model predictions status check
         // if (modelPredictions.status >= 200 && modelPredictions.status < 300) {
 
-        if (true) {
-            const { occupancy_rate, room_status, sent_time } =
+        if (!_.isNull(modelPredictions)) {
+            const { sensor_id, occupancy_rate, room_status, sent_time } =
                 modelPredictions.data;
 
             const roomData = await sensor_unit.findOne({
                 //Can done via same query (1)
                 attributes: ["room_id"],
-                where: { sensor_unit_id: sensorId },
+                where: { sensor_unit_id: sensor_id },
             });
 
             const roomId = roomData.dataValues.room_id;
@@ -113,6 +123,7 @@ export const handleSensorData = async (req, res) => {
                 recieve_time: new Date(),
             };
 
+            
             const newModelPredictions = await model_predictions.create(
                 modelPredictionsArr
             );
@@ -161,25 +172,25 @@ export const handleSensorData = async (req, res) => {
             let schedules = [];
 
             //! shedules
-            // try {
-            //     await Promise.all(
-            //         currentDeviceSwitching.map(async (element) => {
-            //             if (element.whichSchedule !== null) {
-            //                 schedules.push(
-            //                     await schedule.findOne({
-            //                         where: {
-            //                             schedule_id: element.wchich_schedule,
-            //                         },
-            //                     })
-            //                 );
-            //             }
-            //         })
-            //     );
-            // } catch (error) {
-            //     throw new Error(
-            //         "Error while processing elements: " + error.message
-            //     );
-            // }
+            try {
+                await Promise.all(
+                    currentDeviceSwitching.map(async (element) => {
+                        if (element.whichSchedule !== null) {
+                            schedules.push(
+                                await schedule.findOne({
+                                    where: {
+                                        schedule_id: element.wchich_schedule,
+                                    },
+                                })
+                            );
+                        }
+                    })
+                );
+            } catch (error) {
+                throw new Error(
+                    "Error while processing elements: " + error.message
+                );
+            }
 
             const decisionAlgoRequestData = {
                 predictions: JSON.stringify(modelPredictionsArr),
@@ -190,6 +201,8 @@ export const handleSensorData = async (req, res) => {
                 deviceDetails: JSON.stringify(devicesInRoom),
             };
 
+            console.log(decisionAlgoRequestData);
+            
             //! decision algorithm api
             // const decisions = await axios.post(
             //     "/decisionAlgorithm/",
