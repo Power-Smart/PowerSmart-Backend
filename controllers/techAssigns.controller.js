@@ -12,6 +12,7 @@ import SensorUnit from "../models/sensorUnit.model.js";
 import SensorData from "../models/sensorData.model.js";
 import OwnedItem from "../models/ownedItem.model.js";
 import sequelize from "../models/index.js";
+import { notify } from "../utils/helperFunctions.js";
 
 export const assignedCustomers = async (req, res) => {
     const { techSupportID } = req.params;
@@ -84,6 +85,14 @@ export const requestCustomer = async (req, res) => {
             },
         });
         res.status(200).json({ message: "Request Sent" });
+        const customer = await CustomerPlace.findOne({
+            where: {
+                place_id: place_id,
+            },
+        });
+        if (customer) {
+            await notify(tech_support_id, customer.dataValues.user_id, "Access Request", "Tech Support Requested Access to your place");
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error.message });
