@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import MarketPlace from "../models/marketPlace.model.js";
 import Order from "../models/order.model.js";
+=======
+import MarketPlace from "../models/marketplace.model.js";
+
+>>>>>>> b28243aae14686e1eea9c8d5d527ccb3dd84beaf
 
 export const getMarketPlaceItems = async (req, res) => {
     try {
@@ -9,6 +14,7 @@ export const getMarketPlaceItems = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
+<<<<<<< HEAD
 
 export const sendCustomerPaymentSummaryApi = async (req, res) => {
     console.log(req.body)
@@ -33,3 +39,5 @@ export const sendCustomerPaymentSummaryApi = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 }
+=======
+>>>>>>> b28243aae14686e1eea9c8d5d527ccb3dd84beaf
