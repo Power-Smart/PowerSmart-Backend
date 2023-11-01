@@ -153,9 +153,9 @@ export const getDecisions = async (decisionAlgoRequestData) => {
         return (returnVal/arrayDevices.length)*100;
     }
 
-    mutation = (offspring, length, qty)=>{
+    mutation = (offspring, length, qty, mutationFactor)=>{
 
-        const uniqueArrays = new Set();
+        let uniqueArrays = new Set();
 
         while (uniqueArrays.size < qty) {
             
@@ -170,6 +170,16 @@ export const getDecisions = async (decisionAlgoRequestData) => {
             const newArray = part1.concat(part2);
 
             uniqueArrays.add(JSON.stringify(newArray)); 
+
+            for(i = 0; i < mutationFactor*qty; i ++){
+
+                const selectedId = Math.floor(Math.random()*qty);
+
+                uniqueArrays[selectedId] = uniqueArrays[selectedId].map((value) => {
+                    const randomBinary = Math.random() < 0.5 ? 1 : 0; 
+                    return randomBinary;
+                  });
+            }
         }
 
         return Array.from(uniqueArrays).map((str) => JSON.parse(str));
