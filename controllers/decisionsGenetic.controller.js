@@ -234,7 +234,7 @@ export const getDecisions = async (decisionAlgoRequestData) => {
 
             if(ratioDiff < 0.8 || ratioDiff > 1.2){
 
-                population = mutation(chosenPopulation, deviceArray.length, chosenLength);
+                population = mutation(chosenPopulation, deviceArray.length, chosenLength, 0.1);
 
                 previousRatio = ratioDiff;
                 previuosLowest = lowestYet;
