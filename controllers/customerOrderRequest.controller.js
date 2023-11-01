@@ -45,3 +45,22 @@ export const deleteCustomerOrderRequest = async (req, res) => {
     //     res.status(500).json({ message: error.message });
     // }
 }
+
+export const addCustomerOrderRequest = async (req, res) => {
+    try {
+        const { customer_id,place_id,order_description,number_of_rooms,number_of_devices } = req.body;
+        console.log(req.body)
+        const results = await customerOrderRequest.create({
+            user_id: customer_id,
+            place_id: place_id,
+            order_description: order_description,
+            num_of_rooms: number_of_rooms,
+            num_of_devices: number_of_devices,
+            is_tech_support_assigned: false,
+            is_order_completed: false,
+        });
+        res.status(200).json(results);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

@@ -11,11 +11,7 @@ const customerOrderRequest = db.define("customer_order_request", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    tech_support_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    num_of_places: {
+    place_id:{
         type: DataTypes.INTEGER,
         allowNull: false,
     },
@@ -29,6 +25,20 @@ const customerOrderRequest = db.define("customer_order_request", {
     },
     order_description: {
         type: DataTypes.STRING,
+        allowNull: false,
+    },
+    assign_tech_support_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    is_tech_support_assigned: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    is_order_completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
         allowNull: false,
     },
 
