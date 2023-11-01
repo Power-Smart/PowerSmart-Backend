@@ -169,7 +169,7 @@ export const addRelayUnit = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     const { relayUnit } = req.body;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (!isAssignedToPlace(techSupportID, placeID)) {
                 res.status(403).json({ error: "Forbidden" });
             } else {
@@ -181,6 +181,7 @@ export const addRelayUnit = async (req, res) => {
                 res.status(200).json(newRelayUnit);
             }
         } else {
+            console.log("Unauthorized");
             res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
@@ -193,7 +194,7 @@ export const updateRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     const { relayUnit } = req.body;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (!isAssignedToPlace(techSupportID, placeID)) {
                 res.status(403).json({ error: "Forbidden" });
             } else {
@@ -217,7 +218,7 @@ export const updateRelayUnit = async (req, res) => {
 export const deleteRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (!isAssignedToPlace(techSupportID, placeID)) {
                 res.status(403).json({ error: "Forbidden" });
             } else {
@@ -240,7 +241,7 @@ export const deleteRelayUnit = async (req, res) => {
 export const getDevicesOfRoom = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (isAssignedToPlace(techSupportID, placeID)) {
                 const devices = await Device.findAll({
                     where: {
@@ -267,7 +268,7 @@ export const addDevice = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     const { device } = req.body;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (isAssignedToPlace(techSupportID, placeID)) {
                 const newDevice = await Device.create({
                     ...device,
@@ -285,6 +286,7 @@ export const addDevice = async (req, res) => {
                 res.status(403).json({ error: "Forbidden" });
             }
         } else {
+            console.log("Unauthorized");
             res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
@@ -297,7 +299,7 @@ export const updateDevice = async (req, res) => {
     const { techSupportID, placeID, roomID, deviceID } = req.params;
     const { device } = req.body;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (isAssignedToPlace(techSupportID, placeID)) {
                 await Device.update({
                     ...device,
@@ -323,7 +325,7 @@ export const updateDevice = async (req, res) => {
 export const deleteDevice = async (req, res) => {
     const { techSupportID, placeID, roomID, deviceID } = req.params;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (isAssignedToPlace(techSupportID, placeID)) {
                 await Device.destroy({
                     where: {
@@ -347,7 +349,7 @@ export const deleteDevice = async (req, res) => {
 export const getSensorUnitOfRoom = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     try {
-        if (!await hasAccess(techSupportID, placeID)) {
+        if (await hasAccess(techSupportID, placeID)) {
             if (isAssignedToPlace(techSupportID, placeID)) {
                 const sensorUnit = await SensorUnit.findOne({
                     where: {
@@ -357,7 +359,7 @@ export const getSensorUnitOfRoom = async (req, res) => {
                         exclude: ["createdAt", "updatedAt", "room_id"]
                     },
                 });
-                res.status(200).json(sensorUnit.dataValues);
+                res.status(200).json(sensorUnit?.dataValues);
             } else {
                 res.status(403).json({ error: "Forbidden" });
             }
@@ -384,6 +386,47 @@ export const getSensorData = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error.message });
+    }
+}
+
+export const addSensorUnit = async (req, res) => {
+    try {
+        const { roomID } = req.params;
+        const sensorUnit = req.body;
+
+        const newSensorUnit = await SensorUnit.create({
+            ...sensorUnit,
+            room_id: roomID,
+        });
+        res.status(201).json(newSensorUnit);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export const deleteSensorUnit = async (req, res) => {
+    try {
+        const { techSupportID, placeID, roomID, sensorUnitID } = req.params;
+        if (await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                await SensorUnit.destroy({
+                    where: {
+                        sensor_unit_id: sensorUnitID,
+                        room_id: roomID,
+                    },
+                });
+                res.status(200).json({ sensor_unit_id: sensorUnitID });
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
+        } else {
+            res.status(401).json({ error: "Unauthorized" });
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
     }
 }
 
@@ -435,6 +478,30 @@ export const getAvilUnitCount = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 }
+
+export const addRoom = async (req, res) => {
+    try {
+        const { tech_support_id, placeID } = req.params;
+        const { name, size, window_type, active_status, room_type, id } =
+            req.body;
+        console.log(req.body);
+        const room = await Room.create({
+            window_type,
+            is_active: active_status,
+            size: size,
+            type: room_type,
+            place_id: placeID,
+            user_id: id,
+            name: name,
+        });
+        res.status(201).send(room);
+        await notify(tech_support_id, id, "Room Created", `Room ${name} created successfully`);
+        console.log("Room Created Successfully");
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error creating room");
+    }
+};
 
 async function isAssignedToPlace(techSupportID, placeID) {
     const isAssigned = await TechSupportPlace.findOne({

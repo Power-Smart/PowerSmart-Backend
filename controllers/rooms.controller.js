@@ -65,7 +65,7 @@ export const addRoom = async (req, res) => {
     try {
         const room = await Room.create({
             window_type,
-            is_active: active_status,
+            is_active: false,
             size: size,
             type: room_type,
             place_id: placeID,

@@ -6,14 +6,34 @@ import device_switching from "../models/deviceSwitching.model.js";
 import room from "../models/room.model.js";
 import Place from "../models/place.model.js";
 import schedule from "../models/schedule.model.js";
+import getDecisions from "../controllers/decisions.controller.js";
 import axios from "axios";
 import db from "../models/index.js";
 import _ from "lodash";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 
+
+// class States {
+//     constructor() {
+//         this.stateList = {};
+//         this.addState = this.addState.bind(this);
+//     }
+
+//     addState(roomId, state){
+//         this.stateList[roomId] = state;
+//     }
+
+//     getState(roomId){
+//         return this.stateList[roomId]?this.stateList[roomId]:false;
+//     }
+// }
+
+// const states = new States();
+
 dotenv.config();
 const WS_SERVER_URL = process.env.WS_SERVER_URL;
+
 
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -46,6 +66,15 @@ export const handleSensorData = async (req, res) => {
 
         const newSensorData = await sensor_data.create(sensorDataArr);
 
+        const sensorDataArrSend = {
+            sensor_unit_id: sensorId,
+            co2_level: co2_level,
+            hummidity_level: hummidity_level,
+            temperature: temperature,
+            light_intensity: light_intensity,
+            pir_reading: pir_reading
+        }
+
         // newSensorData.save();
 
         // res.status(201).json({
@@ -53,30 +82,33 @@ export const handleSensorData = async (req, res) => {
         // });
 
         //! model predictions api
-        // const modelPredictions = await axios.post(
-        //     "/mlapi/getPredictions",
-        //     sensorDataArr
-        // );
-
-        const modelPredictions = {
-            data: {
-                occupancy_rate: "medium",
-                room_status: "normal",
-                sent_time: new Date(),
+        const modelPredictions = await await fetch('http://20.253.48.86:4001/relayswitch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
-        };
+            body: JSON.stringify(sensorDataArrSend)
+        });
+
+        // const modelPredictions = {
+        //     data: {
+        //         occupancy_rate: "medium",
+        //         room_status: "normal",
+        //         sent_time: new Date(),
+        //     },
+        // };
 
         //! model predictions status check
         // if (modelPredictions.status >= 200 && modelPredictions.status < 300) {
 
-        if (true) {
-            const { occupancy_rate, room_status, sent_time } =
+        if (!_.isNull(modelPredictions)) {
+            const { sensor_id_prediction, occupancy_rate, room_status, sent_time } =
                 modelPredictions.data;
 
             const roomData = await sensor_unit.findOne({
                 //Can done via same query (1)
                 attributes: ["room_id"],
-                where: { sensor_unit_id: sensorId },
+                where: { sensor_unit_id: sensor_id_prediction },
             });
 
             const roomId = roomData.dataValues.room_id;
@@ -100,6 +132,7 @@ export const handleSensorData = async (req, res) => {
                 recieve_time: new Date(),
             };
 
+            
             const newModelPredictions = await model_predictions.create(
                 modelPredictionsArr
             );
@@ -120,7 +153,7 @@ export const handleSensorData = async (req, res) => {
             }
 
             const thisPlace = (
-                await place.findOne({
+                await Place.findOne({
                     where: { place_id: thisRoom.place_id },
                 })
             ).dataValues;
@@ -148,25 +181,25 @@ export const handleSensorData = async (req, res) => {
             let schedules = [];
 
             //! shedules
-            // try {
-            //     await Promise.all(
-            //         currentDeviceSwitching.map(async (element) => {
-            //             if (element.whichSchedule !== null) {
-            //                 schedules.push(
-            //                     await schedule.findOne({
-            //                         where: {
-            //                             schedule_id: element.wchich_schedule,
-            //                         },
-            //                     })
-            //                 );
-            //             }
-            //         })
-            //     );
-            // } catch (error) {
-            //     throw new Error(
-            //         "Error while processing elements: " + error.message
-            //     );
-            // }
+            try {
+                await Promise.all(
+                    currentDeviceSwitching.map(async (element) => {
+                        if (element.whichSchedule !== null) {
+                            schedules.push(
+                                await schedule.findOne({
+                                    where: {
+                                        schedule_id: element.wchich_schedule,
+                                    },
+                                })
+                            );
+                        }
+                    })
+                );
+            } catch (error) {
+                throw new Error(
+                    "Error while processing elements: " + error.message
+                );
+            }
 
             const decisionAlgoRequestData = {
                 predictions: JSON.stringify(modelPredictionsArr),
@@ -177,26 +210,16 @@ export const handleSensorData = async (req, res) => {
                 deviceDetails: JSON.stringify(devicesInRoom),
             };
 
+            console.log(decisionAlgoRequestData);
+            
             //! decision algorithm api
             // const decisions = await axios.post(
             //     "/decisionAlgorithm/",
             //     decisionAlgoRequestData
             // );
 
-            const decisions = {
-                data: [
-                    {
-                        device_id: 2,
-                        switch_status: Math.random() < 0.5
-                    }
-                    ,
-                    {
-                        device_id: 3,
-                        switch_status: Math.random() < 0.5
-                    },
-                ],
-                status: 200,
-            };
+            const decisions = getDecisions(decisionAlgoRequestData);
+
 
             if (decisions.status >= 200 && decisions.status < 300) {
                 try {
