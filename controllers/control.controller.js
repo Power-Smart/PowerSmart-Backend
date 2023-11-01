@@ -6,7 +6,7 @@ import device_switching from "../models/deviceSwitching.model.js";
 import room from "../models/room.model.js";
 import Place from "../models/place.model.js";
 import schedule from "../models/schedule.model.js";
-import getDecisions from "./decisions.controller.js";
+import { getDecisions } from "./decisions.controller.js";
 import axios from "axios";
 import db from "../models/index.js";
 import _ from "lodash";
