@@ -5,7 +5,7 @@ const Schedule = db.define("schedule", {
     schedule_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        // autoIncrement: true,
+        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING,
@@ -14,11 +14,11 @@ const Schedule = db.define("schedule", {
         type: DataTypes.BOOLEAN,
     },
     start_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.TIME,
         timezone: true,
     },
     end_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.TIME,
         timezone: true,
     },
     start_day: {
