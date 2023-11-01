@@ -6,6 +6,7 @@ import placesRouter from "./places.route.js";
 import roomsRouter from "./room.route.js";
 import paymentRouter from "./payment.route.js";
 import deviceRouter from "./device.route.js";
+import reportsRouter from "./report.route.js";
 import techSupportRouter from './techSupport.route.js'
 import techAssignRouter from "./techAssigns.route.js";
 import marketplaceRouter from "./marketPlace.route.js";
@@ -35,6 +36,7 @@ router.use("/places", placesRouter);
 router.use("/places/rooms", roomsRouter);
 router.use("/devices", deviceRouter);
 router.use("/payment", paymentRouter);
+router.use("/reports", reportsRouter);
 router.use("/techSupport", techSupportRouter);
 router.use("/assigns", techAssignRouter)
 router.use("/marketplace", marketplaceRouter);
