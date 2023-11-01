@@ -438,6 +438,30 @@ export const getAvilUnitCount = async (req, res) => {
     }
 }
 
+export const addRoom = async (req, res) => {
+    try {
+        const { tech_support_id, placeID } = req.params;
+        const { name, size, window_type, active_status, room_type, id } =
+            req.body;
+        console.log(req.body);
+        const room = await Room.create({
+            window_type,
+            is_active: active_status,
+            size: size,
+            type: room_type,
+            place_id: placeID,
+            user_id: id,
+            name: name,
+        });
+        res.status(201).send(room);
+        await notify(tech_support_id, id, "Room Created", `Room ${name} created successfully`);
+        console.log("Room Created Successfully");
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error creating room");
+    }
+};
+
 async function isAssignedToPlace(techSupportID, placeID) {
     const isAssigned = await TechSupportPlace.findOne({
         where: {
