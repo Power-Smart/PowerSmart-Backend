@@ -33,7 +33,7 @@ import CustomerOrderRequest from "./customerOrderRequest.model.js";
 import TechSupportRating from "./techSupportRating.model.js";
 import ComplaintHandling from "./complaintHandling.model.js";
 import CustomerServiceRequest from "./customerServiceRequest.model.js";
-
+import Notification from "./notification.model.js";
 import GuestUserSuggest from "./guestUserSuggest.model.js";
 import GuestUser from "./guestUser.model.js";
 
@@ -42,8 +42,8 @@ Customer.belongsTo(GuestUser, { foreignKey: "user_id", as: "guestUser" });
 GuestUser.hasOne(Customer, { foreignKey: "user_id", as: "customer" });
 
 
-ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id",  });
-Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id",  });
+ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id", });
+Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id", });
 
 ComplaintHandling.belongsTo(TechSupport, { foreignKey: "user_id", as: "techSupport" });
 TechSupport.hasMany(ComplaintHandling, { foreignKey: "tech_support_id", as: "complaintHandling" });
@@ -56,6 +56,7 @@ Customer.hasMany(CustomerOrderRequest, { foreignKey: "user_id", as: "customerOrd
 // Define the association between the Chat and User models
 User.belongsTo(Chat, { foreignKey: "sender_id", as: "sender_chat" });
 User.belongsTo(Chat, { foreignKey: "receiver_id", as: "receiver_chat" });
+
 
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
@@ -238,3 +239,6 @@ Place.hasMany(TechSupportPlace, { foreignKey: "place_id", as: "techSupportPlace"
 // // Define the association between the GuestUser and User models
 // GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });
 // User.hasOne(GuestUser, { foreignKey: "guest_id", as: "guestUser" });
+
+Notification.belongsTo(User, { foreignKey: "sender_id", as: "user" });
+Notification.belongsTo(User, { foreignKey: "receiver_id", as: "receiver" });

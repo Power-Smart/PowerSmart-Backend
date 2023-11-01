@@ -7,9 +7,8 @@ const Customer = db.define("customer", {
         primaryKey: true,
         autoIncrement:true
     },
-    points: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+    profile_pic: {
+        type: DataTypes.STRING,
     },
     year_subscription: {
         type: DataTypes.DATE,
@@ -28,8 +27,9 @@ const Customer = db.define("customer", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    profile_pic: {
-        type: DataTypes.STRING,
+    points: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
     achievements: {
         type: DataTypes.ARRAY(DataTypes.STRING),

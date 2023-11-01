@@ -6,10 +6,33 @@ import device_switching from "../models/deviceSwitching.model.js";
 import room from "../models/room.model.js";
 import Place from "../models/place.model.js";
 import schedule from "../models/schedule.model.js";
+import getDecisions from "../controllers/decisions.controller.js";
 import axios from "axios";
 import db from "../models/index.js";
 import _ from "lodash";
+import dotenv from "dotenv";
 import fetch from "node-fetch";
+
+
+// class States {
+//     constructor() {
+//         this.stateList = {};
+//         this.addState = this.addState.bind(this);
+//     }
+
+//     addState(roomId, state){
+//         this.stateList[roomId] = state;
+//     }
+
+//     getState(roomId){
+//         return this.stateList[roomId]?this.stateList[roomId]:false;
+//     }
+// }
+
+// const states = new States();
+
+dotenv.config();
+const WS_SERVER_URL = process.env.WS_SERVER_URL;
 
 
 function delay(ms) {
@@ -43,6 +66,15 @@ export const handleSensorData = async (req, res) => {
 
         const newSensorData = await sensor_data.create(sensorDataArr);
 
+        const sensorDataArrSend = {
+            sensor_unit_id: sensorId,
+            co2_level: co2_level,
+            hummidity_level: hummidity_level,
+            temperature: temperature,
+            light_intensity: light_intensity,
+            pir_reading: pir_reading
+        }
+
         // newSensorData.save();
 
         // res.status(201).json({
@@ -50,30 +82,33 @@ export const handleSensorData = async (req, res) => {
         // });
 
         //! model predictions api
-        // const modelPredictions = await axios.post(
-        //     "/mlapi/getPredictions",
-        //     sensorDataArr
-        // );
-
-        const modelPredictions = {
-            data: {
-                occupancy_rate: "medium",
-                room_status: "normal",
-                sent_time: new Date(),
+        const modelPredictions = await await fetch('http://20.253.48.86:4001/relayswitch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
-        };
+            body: JSON.stringify(sensorDataArrSend)
+        });
+
+        // const modelPredictions = {
+        //     data: {
+        //         occupancy_rate: "medium",
+        //         room_status: "normal",
+        //         sent_time: new Date(),
+        //     },
+        // };
 
         //! model predictions status check
         // if (modelPredictions.status >= 200 && modelPredictions.status < 300) {
 
-        if (true) {
-            const { occupancy_rate, room_status, sent_time } =
+        if (!_.isNull(modelPredictions)) {
+            const { sensor_id_prediction, occupancy_rate, room_status, sent_time } =
                 modelPredictions.data;
 
             const roomData = await sensor_unit.findOne({
                 //Can done via same query (1)
                 attributes: ["room_id"],
-                where: { sensor_unit_id: sensorId },
+                where: { sensor_unit_id: sensor_id_prediction },
             });
 
             const roomId = roomData.dataValues.room_id;
@@ -97,6 +132,7 @@ export const handleSensorData = async (req, res) => {
                 recieve_time: new Date(),
             };
 
+            
             const newModelPredictions = await model_predictions.create(
                 modelPredictionsArr
             );
@@ -117,7 +153,7 @@ export const handleSensorData = async (req, res) => {
             }
 
             const thisPlace = (
-                await place.findOne({
+                await Place.findOne({
                     where: { place_id: thisRoom.place_id },
                 })
             ).dataValues;
@@ -145,25 +181,25 @@ export const handleSensorData = async (req, res) => {
             let schedules = [];
 
             //! shedules
-            // try {
-            //     await Promise.all(
-            //         currentDeviceSwitching.map(async (element) => {
-            //             if (element.whichSchedule !== null) {
-            //                 schedules.push(
-            //                     await schedule.findOne({
-            //                         where: {
-            //                             schedule_id: element.wchich_schedule,
-            //                         },
-            //                     })
-            //                 );
-            //             }
-            //         })
-            //     );
-            // } catch (error) {
-            //     throw new Error(
-            //         "Error while processing elements: " + error.message
-            //     );
-            // }
+            try {
+                await Promise.all(
+                    currentDeviceSwitching.map(async (element) => {
+                        if (element.whichSchedule !== null) {
+                            schedules.push(
+                                await schedule.findOne({
+                                    where: {
+                                        schedule_id: element.wchich_schedule,
+                                    },
+                                })
+                            );
+                        }
+                    })
+                );
+            } catch (error) {
+                throw new Error(
+                    "Error while processing elements: " + error.message
+                );
+            }
 
             const decisionAlgoRequestData = {
                 predictions: JSON.stringify(modelPredictionsArr),
@@ -174,26 +210,16 @@ export const handleSensorData = async (req, res) => {
                 deviceDetails: JSON.stringify(devicesInRoom),
             };
 
+            console.log(decisionAlgoRequestData);
+            
             //! decision algorithm api
             // const decisions = await axios.post(
             //     "/decisionAlgorithm/",
             //     decisionAlgoRequestData
             // );
 
-            const decisions = {
-                data: [
-                    {
-                        device_id: 2,
-                        switch_status: Math.random() < 0.5
-                        }
-                        ,
-                    {
-                        device_id: 3,
-                        switch_status:Math.random() < 0.5
-                    },
-                ],
-                status: 200,
-            };
+            const decisions = getDecisions(decisionAlgoRequestData);
+
 
             if (decisions.status >= 200 && decisions.status < 300) {
                 try {
@@ -304,7 +330,7 @@ export const handleSensorData = async (req, res) => {
                         while (count < errorRepeatCount) {
                             try {
                                 // const wsServerResponse = await axios.post("http://4.157.52.81:4001/relayswitch", wsServerData);
-                                const wsServerResponse1 = await fetch('http://20.253.48.86:4001/relayswitch', {
+                                const wsServerResponse1 = await fetch(`${WS_SERVER_URL}/relayswitch`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -531,338 +557,338 @@ export const handleSensorData = async (req, res) => {
 
 export const switchDevicesBySchedule = async (req, res) => {
 
-    try{
+    try {
 
-        const {switchingScheme, scheduleId} = req.body;
+        const { switchingScheme, scheduleId } = req.body;
 
         const devicesIdsInnRoom = await Object.keys(switchingScheme);
-        
 
 
-    const decisions = [switchingScheme];
 
-    if (!_.isEmpty(decisions)) {
-        try {
-            // Define the forEach callback function as async
-            await Promise.all(
-                decisions.data.map(async (element) => {
-                    const deviceToSwitchData =
-                        await device_switching.findOne({
-                            where: {
-                                device_id: element.device_id,
-                                status: "active",
-                            },
-                        });
+        const decisions = [switchingScheme];
 
-                    if (!_.isNull(deviceToSwitchData)) {
-                        const deviceToSwitch =
-                            deviceToSwitchData.dataValues;
-                        // const deviceToSwitch = decisions.data['device'];
-
-                        if (!_.isEmpty(deviceToSwitch)) {
-                            try {
-                                // await Promise.all(deviceToSwitch.map(async (element)=>{
-                                const deviceSwitchChangeResults =
-                                    await device_switching.update(
-                                        {
-                                            status: "inactive_pending",
-                                        },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    deviceToSwitch.device_id,
-                                                status: "active",
-                                            },
-                                        }
-                                    );
-
-                                if (
-                                    _.isEmpty(deviceSwitchChangeResults)
-                                ) {
-                                    throw new Error(
-                                        "Error while updating switching scheme"
-                                    );
-                                }
-                                // }));
-                            } catch (error) {
-                                throw new Error(error.message);
-                            }
-                        }
-                    }
-                })
-            );
-        } catch (error) {
-            // Handle any errors that occur during the await calls
-            throw new Error(error.message);
-        }
-
-        let wsServerResponseCopy = {}
-        try {
-            await Promise.all(
-                decisions.data.map(async (element) => {
-                    let deviceSwitchingAccordingToDecisions = {
-                        device_id: element.device_id,
-                        switch_status: element.switch_status,
-                        activity: "schedule",
-                        wchich_schedule: [scheduleId],
-                        status: "active_pending",
-                        changed_at: new Date(),
-                    };
-
-                    const newdeviceSwitchingAccordingToDecisions =
-                        await device_switching.create(
-                            deviceSwitchingAccordingToDecisions
-                        );
-                })
-            );
-            const [relaySocketDeviceSwithResults, metadata] =
-                await db.query(`SELECT device_switchings.device_id, device_switchings.switch_status, devices.relay_unit_id, devices.socket FROM device_switchings, devices WHERE devices.room_id=${roomId} AND device_switchings.activity='prediction' AND device_switchings.status='active_pending' AND device_switchings.device_id = devices.device_id`);
-            let wsServerDataToSend = {};
+        if (!_.isEmpty(decisions)) {
             try {
+                // Define the forEach callback function as async
                 await Promise.all(
-                    relaySocketDeviceSwithResults.map(
-                        async (element) => {
-                            if (!wsServerDataToSend.hasOwnProperty(element.relay_unit_id)) {
-                                wsServerDataToSend[
-                                    element.relay_unit_id
-                                ] = {};
-                            }
-                            wsServerDataToSend[element.relay_unit_id][element.socket] = element.switch_status;
-                        }
-                    )
-                );
-            } catch (error) {
-                throw new Error(
-                    "Internal processing error" + error.message
-                );
-            }
-            console.log(wsServerDataToSend);
+                    decisions.data.map(async (element) => {
+                        const deviceToSwitchData =
+                            await device_switching.findOne({
+                                where: {
+                                    device_id: element.device_id,
+                                    status: "active",
+                                },
+                            });
 
-            //? Last Stopped Here
-            let fillCount = 0;
+                        if (!_.isNull(deviceToSwitchData)) {
+                            const deviceToSwitch =
+                                deviceToSwitchData.dataValues;
+                            // const deviceToSwitch = decisions.data['device'];
 
-            let remainingRelays = [];
-            let doneRelays = [];
-
-            async function sendToWs(wsServerData, errorRepeatCount) {
-                let count = 0;
-
-                while (count < errorRepeatCount) {
-                    try {
-                        // const wsServerResponse = await axios.post("http://4.157.52.81:4001/relayswitch", wsServerData);
-                        const wsServerResponse1 = await fetch('http://20.253.48.86:4001/relayswitch', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(wsServerData)
-                        });
-                        const wsServerResponse = await wsServerResponse1.json();
-                        console.log("hello", JSON.stringify(wsServerResponse));
-                        if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300 && _.isEmpty(wsServerResponse.notFoundRelays)) {
-                            try {
-                                const deviceSwitchChangeResultsAfterSwitchingActive =
-                                    await device_switching.update(
-                                        { status: "inactive" },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    devicesIdsInnRoom,
+                            if (!_.isEmpty(deviceToSwitch)) {
+                                try {
+                                    // await Promise.all(deviceToSwitch.map(async (element)=>{
+                                    const deviceSwitchChangeResults =
+                                        await device_switching.update(
+                                            {
                                                 status: "inactive_pending",
                                             },
-                                        }
-                                    );
-                                console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
+                                            {
+                                                where: {
+                                                    device_id:
+                                                        deviceToSwitch.device_id,
+                                                    status: "active",
+                                                },
+                                            }
+                                        );
 
-                                const deviceSwitchChangeResultsAfterSwitchingInactive =
-                                    await device_switching.update(
-                                        { status: "active" },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    devicesIdsInnRoom,
-                                                status: "active_pending",
-                                            },
-                                        }
-                                    );
-                                doneRelays.push(wsServerResponse.foundRelays);
-                                console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
-                                throw new Error("Operation Successful");
-                            } catch (error) {
-                                throw new Error(error.message);
-                            }
-                        } else if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300) {
-                            doneRelays.push(wsServerResponse.foundRelays);
-                            if (fillCount <= 3) {
-                                try {
-                                    const deciceIdList1 = async () => {
-                                        wsServerResponse.foundRelays.map.set(async (element) => {
-                                            Object.entries(element).forEach(async ([key, value]) => {
-                                                Object.entries(value).forEach(async ([k, v]) => {
-                                                    console.log("key", key);
-                                                    return await device.findOne(
-                                                        {
-                                                            attributes: ["device_id",],
-                                                            where: { relay_id: key, socket: k },
-                                                        });
-                                                });
-                                            });
-                                        });
+                                    if (
+                                        _.isEmpty(deviceSwitchChangeResults)
+                                    ) {
+                                        throw new Error(
+                                            "Error while updating switching scheme"
+                                        );
                                     }
-                                    const value1 = await deciceIdList1();
+                                    // }));
+                                } catch (error) {
+                                    throw new Error(error.message);
+                                }
+                            }
+                        }
+                    })
+                );
+            } catch (error) {
+                // Handle any errors that occur during the await calls
+                throw new Error(error.message);
+            }
+
+            let wsServerResponseCopy = {}
+            try {
+                await Promise.all(
+                    decisions.data.map(async (element) => {
+                        let deviceSwitchingAccordingToDecisions = {
+                            device_id: element.device_id,
+                            switch_status: element.switch_status,
+                            activity: "schedule",
+                            wchich_schedule: [scheduleId],
+                            status: "active_pending",
+                            changed_at: new Date(),
+                        };
+
+                        const newdeviceSwitchingAccordingToDecisions =
+                            await device_switching.create(
+                                deviceSwitchingAccordingToDecisions
+                            );
+                    })
+                );
+                const [relaySocketDeviceSwithResults, metadata] =
+                    await db.query(`SELECT device_switchings.device_id, device_switchings.switch_status, devices.relay_unit_id, devices.socket FROM device_switchings, devices WHERE devices.room_id=${roomId} AND device_switchings.activity='prediction' AND device_switchings.status='active_pending' AND device_switchings.device_id = devices.device_id`);
+                let wsServerDataToSend = {};
+                try {
+                    await Promise.all(
+                        relaySocketDeviceSwithResults.map(
+                            async (element) => {
+                                if (!wsServerDataToSend.hasOwnProperty(element.relay_unit_id)) {
+                                    wsServerDataToSend[
+                                        element.relay_unit_id
+                                    ] = {};
+                                }
+                                wsServerDataToSend[element.relay_unit_id][element.socket] = element.switch_status;
+                            }
+                        )
+                    );
+                } catch (error) {
+                    throw new Error(
+                        "Internal processing error" + error.message
+                    );
+                }
+                console.log(wsServerDataToSend);
+
+                //? Last Stopped Here
+                let fillCount = 0;
+
+                let remainingRelays = [];
+                let doneRelays = [];
+
+                async function sendToWs(wsServerData, errorRepeatCount) {
+                    let count = 0;
+
+                    while (count < errorRepeatCount) {
+                        try {
+                            // const wsServerResponse = await axios.post("http://4.157.52.81:4001/relayswitch", wsServerData);
+                            const wsServerResponse1 = await fetch(`${WS_SERVER_URL}/relayswitch`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(wsServerData)
+                            });
+                            const wsServerResponse = await wsServerResponse1.json();
+                            console.log("hello", JSON.stringify(wsServerResponse));
+                            if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300 && _.isEmpty(wsServerResponse.notFoundRelays)) {
+                                try {
                                     const deviceSwitchChangeResultsAfterSwitchingActive =
                                         await device_switching.update(
                                             { status: "inactive" },
                                             {
                                                 where: {
-                                                    device_id: value1,
+                                                    device_id:
+                                                        devicesIdsInnRoom,
                                                     status: "inactive_pending",
                                                 },
                                             }
                                         );
                                     console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
-                                    const deciceIdList2 = async () => {
-                                        wsServerResponse.foundRelays.map.set(async (element) => {
-                                            Object.entries(element).forEach(async ([key, value]) => {
-                                                Object.entries(value).forEach(async ([k, v]) => {
-                                                    console.log("key", key);
-                                                    return await device.findOne({
-                                                        attributes: ["device_id"],
-                                                        where: {
-                                                            relay_id:
-                                                                key,
-                                                            socket: k,
-                                                        },
-                                                    });
-                                                });
-                                            });
-                                        });
-                                    }
-                                    const value2 = await deciceIdList2();
+
                                     const deviceSwitchChangeResultsAfterSwitchingInactive =
                                         await device_switching.update(
                                             { status: "active" },
                                             {
                                                 where: {
-                                                    device_id: value2,
+                                                    device_id:
+                                                        devicesIdsInnRoom,
                                                     status: "active_pending",
                                                 },
-                                            });
+                                            }
+                                        );
+                                    doneRelays.push(wsServerResponse.foundRelays);
                                     console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
-
-
-                                    async () => {
-                                        await delay(500);
-                                    };
-
-                                    fillCount++;
-                                    const constForReturnVal =
-                                        await sendToWs(wsServerResponse.notFoundRelays, 3);
+                                    throw new Error("Operation Successful");
                                 } catch (error) {
                                     throw new Error(error.message);
                                 }
+                            } else if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300) {
+                                doneRelays.push(wsServerResponse.foundRelays);
+                                if (fillCount <= 3) {
+                                    try {
+                                        const deciceIdList1 = async () => {
+                                            wsServerResponse.foundRelays.map.set(async (element) => {
+                                                Object.entries(element).forEach(async ([key, value]) => {
+                                                    Object.entries(value).forEach(async ([k, v]) => {
+                                                        console.log("key", key);
+                                                        return await device.findOne(
+                                                            {
+                                                                attributes: ["device_id",],
+                                                                where: { relay_id: key, socket: k },
+                                                            });
+                                                    });
+                                                });
+                                            });
+                                        }
+                                        const value1 = await deciceIdList1();
+                                        const deviceSwitchChangeResultsAfterSwitchingActive =
+                                            await device_switching.update(
+                                                { status: "inactive" },
+                                                {
+                                                    where: {
+                                                        device_id: value1,
+                                                        status: "inactive_pending",
+                                                    },
+                                                }
+                                            );
+                                        console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
+                                        const deciceIdList2 = async () => {
+                                            wsServerResponse.foundRelays.map.set(async (element) => {
+                                                Object.entries(element).forEach(async ([key, value]) => {
+                                                    Object.entries(value).forEach(async ([k, v]) => {
+                                                        console.log("key", key);
+                                                        return await device.findOne({
+                                                            attributes: ["device_id"],
+                                                            where: {
+                                                                relay_id:
+                                                                    key,
+                                                                socket: k,
+                                                            },
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        }
+                                        const value2 = await deciceIdList2();
+                                        const deviceSwitchChangeResultsAfterSwitchingInactive =
+                                            await device_switching.update(
+                                                { status: "active" },
+                                                {
+                                                    where: {
+                                                        device_id: value2,
+                                                        status: "active_pending",
+                                                    },
+                                                });
+                                        console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
+
+
+                                        async () => {
+                                            await delay(500);
+                                        };
+
+                                        fillCount++;
+                                        const constForReturnVal =
+                                            await sendToWs(wsServerResponse.notFoundRelays, 3);
+                                    } catch (error) {
+                                        throw new Error(error.message);
+                                    }
+                                } else {
+                                    remainingRelays.push(wsServerResponse.notFoundRelays);
+                                    console.log("wsServerResponse.notFoundRelays")
+
+                                }
                             } else {
-                                remainingRelays.push(wsServerResponse.notFoundRelays);
-                                console.log("wsServerResponse.notFoundRelays")
+                                count++;
+                                async () => {
+                                    await delay(500);
+                                };
 
+                                if (count === errorRepeatCount) {
+                                    throw new Error(
+                                        "hello error"
+                                    );
+                                    wsServerResponseCopy = wsServerResponse;
+                                }
                             }
-                        } else {
-                            count++;
-                            async () => {
-                                await delay(500);
-                            };
-
-                            if (count === errorRepeatCount) {
-                                throw new Error(
-                                    "hello error"
-                                );
-                                wsServerResponseCopy = wsServerResponse;
-                            }
+                        } catch (error) {
+                            return error.message;
                         }
-                    } catch (error) {
-                        return error.message;
                     }
                 }
-            }
-            const wsServerData = { switchingScheme: wsServerDataToSend };
-            throw new Error(await sendToWs(wsServerData, 10));
-        } catch (error) {
-            console.log(error);
-            if (error.message === "hello error") {
-                try {
-                    const deciceIdList3 = async () => {
-                        wsServerResponseCopy.NotFoundRelays.map.set(async (element) => {
-                            Object.entries(element).forEach(async ([key, value]) => {
-                                Object.entries(value).forEach(async ([k, v]) => {
-                                    console.log("key", key);
-                                    return await device.findOne({
-                                        attributes: ["device_id"],
-                                        where: {
-                                            relay_id:
-                                                key,
-                                            socket: k,
-                                        },
+                const wsServerData = { switchingScheme: wsServerDataToSend };
+                throw new Error(await sendToWs(wsServerData, 10));
+            } catch (error) {
+                console.log(error);
+                if (error.message === "hello error") {
+                    try {
+                        const deciceIdList3 = async () => {
+                            wsServerResponseCopy.NotFoundRelays.map.set(async (element) => {
+                                Object.entries(element).forEach(async ([key, value]) => {
+                                    Object.entries(value).forEach(async ([k, v]) => {
+                                        console.log("key", key);
+                                        return await device.findOne({
+                                            attributes: ["device_id"],
+                                            where: {
+                                                relay_id:
+                                                    key,
+                                                socket: k,
+                                            },
+                                        });
                                     });
                                 });
                             });
-                        });
-                    }
-                    const value3 = await deciceIdList3();
-                    console.log(value3)
-                    const deviceSwitchChangeResultsAfterInternalErrorActive =
-                        await device_switching.update(
-                            { status: "active" },
-                            {
-                                where: {
-                                    device_id: value3,
-                                    status: "inactive_pending",
-                                },
-                            });
-                    console.log("deviceSwitchChangeResultsAfterInternalErrorActive", deviceSwitchChangeResultsAfterInternalErrorActive)
-                    const deciceIdList4 = async () => {
-                        wsServerResponseCopy.
-                            NotFoundRelays
-                            .map.set(async (element) => {
-                                Object.entries(element).forEach(
-                                    async ([key, value]) => {
-                                        Object.entries(
-                                            value
-                                        ).forEach(async ([k, v]) => {
-                                            console.log("key", key);
-                                            return await device.findOne({
-                                                attributes: ["device_id",],
-                                                where: { relay_id: key, socket: k },
+                        }
+                        const value3 = await deciceIdList3();
+                        console.log(value3)
+                        const deviceSwitchChangeResultsAfterInternalErrorActive =
+                            await device_switching.update(
+                                { status: "active" },
+                                {
+                                    where: {
+                                        device_id: value3,
+                                        status: "inactive_pending",
+                                    },
+                                });
+                        console.log("deviceSwitchChangeResultsAfterInternalErrorActive", deviceSwitchChangeResultsAfterInternalErrorActive)
+                        const deciceIdList4 = async () => {
+                            wsServerResponseCopy.
+                                NotFoundRelays
+                                .map.set(async (element) => {
+                                    Object.entries(element).forEach(
+                                        async ([key, value]) => {
+                                            Object.entries(
+                                                value
+                                            ).forEach(async ([k, v]) => {
+                                                console.log("key", key);
+                                                return await device.findOne({
+                                                    attributes: ["device_id",],
+                                                    where: { relay_id: key, socket: k },
+                                                });
                                             });
                                         });
-                                    });
+                                });
+                        }
+                        const value4 = await deciceIdList4();
+                        console.log(value4)
+                        const deviceSwitchDeleteResultsAfterInternalError =
+                            await device_switching.destroy({
+                                where: {
+                                    device_id: value4,
+                                    status: "active_pending",
+                                },
                             });
+                        console.log("deviceSwitchDeleteResultsAfterInternalError", deviceSwitchDeleteResultsAfterInternalError)
+
+
+                        throw new Error(
+                            "Switching Aborted due to internal error"
+                        );
+                    } catch (error) {
+                        throw new Error(error.message);
                     }
-                    const value4 = await deciceIdList4();
-                    console.log(value4)
-                    const deviceSwitchDeleteResultsAfterInternalError =
-                        await device_switching.destroy({
-                            where: {
-                                device_id: value4,
-                                status: "active_pending",
-                            },
-                        });
-                    console.log("deviceSwitchDeleteResultsAfterInternalError", deviceSwitchDeleteResultsAfterInternalError)
-
-
-                    throw new Error(
-                        "Switching Aborted due to internal error"
-                    );
-                } catch (error) {
-                    throw new Error(error.message);
                 }
-            }
 
-            throw new Error(error.message);
+                throw new Error(error.message);
+            }
+        } else {
+            throw new Error("Decision Invalid");
         }
-    } else {
-        throw new Error("Decision Invalid");
-    }
-    }catch(error){
+    } catch (error) {
         if (error.message === "Operation Successful") {
             res.status(200).send(error.message);
         } else {
@@ -875,338 +901,338 @@ export const switchDevicesBySchedule = async (req, res) => {
 
 export const switchDevicesManually = async (req, res) => {
 
-    try{
+    try {
 
-        const {switchingScheme} = req.body;
+        const { switchingScheme } = req.body;
 
         const devicesIdsInnRoom = await Object.keys(switchingScheme);
-        
 
 
-    const decisions = [switchingScheme];
 
-    if (!_.isEmpty(decisions)) {
-        try {
-            // Define the forEach callback function as async
-            await Promise.all(
-                decisions.data.map(async (element) => {
-                    const deviceToSwitchData =
-                        await device_switching.findOne({
-                            where: {
-                                device_id: element.device_id,
-                                status: "active",
-                            },
-                        });
+        const decisions = [switchingScheme];
 
-                    if (!_.isNull(deviceToSwitchData)) {
-                        const deviceToSwitch =
-                            deviceToSwitchData.dataValues;
-                        // const deviceToSwitch = decisions.data['device'];
-
-                        if (!_.isEmpty(deviceToSwitch)) {
-                            try {
-                                // await Promise.all(deviceToSwitch.map(async (element)=>{
-                                const deviceSwitchChangeResults =
-                                    await device_switching.update(
-                                        {
-                                            status: "inactive_pending",
-                                        },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    deviceToSwitch.device_id,
-                                                status: "active",
-                                            },
-                                        }
-                                    );
-
-                                if (
-                                    _.isEmpty(deviceSwitchChangeResults)
-                                ) {
-                                    throw new Error(
-                                        "Error while updating switching scheme"
-                                    );
-                                }
-                                // }));
-                            } catch (error) {
-                                throw new Error(error.message);
-                            }
-                        }
-                    }
-                })
-            );
-        } catch (error) {
-            // Handle any errors that occur during the await calls
-            throw new Error(error.message);
-        }
-
-        let wsServerResponseCopy = {}
-        try {
-            await Promise.all(
-                decisions.data.map(async (element) => {
-                    let deviceSwitchingAccordingToDecisions = {
-                        device_id: element.device_id,
-                        switch_status: element.switch_status,
-                        activity: "manual",
-                        wchich_schedule: null,
-                        status: "active_pending",
-                        changed_at: new Date(),
-                    };
-
-                    const newdeviceSwitchingAccordingToDecisions =
-                        await device_switching.create(
-                            deviceSwitchingAccordingToDecisions
-                        );
-                })
-            );
-            const [relaySocketDeviceSwithResults, metadata] =
-                await db.query(`SELECT device_switchings.device_id, device_switchings.switch_status, devices.relay_unit_id, devices.socket FROM device_switchings, devices WHERE devices.room_id=${roomId} AND device_switchings.activity='prediction' AND device_switchings.status='active_pending' AND device_switchings.device_id = devices.device_id`);
-            let wsServerDataToSend = {};
+        if (!_.isEmpty(decisions)) {
             try {
+                // Define the forEach callback function as async
                 await Promise.all(
-                    relaySocketDeviceSwithResults.map(
-                        async (element) => {
-                            if (!wsServerDataToSend.hasOwnProperty(element.relay_unit_id)) {
-                                wsServerDataToSend[
-                                    element.relay_unit_id
-                                ] = {};
-                            }
-                            wsServerDataToSend[element.relay_unit_id][element.socket] = element.switch_status;
-                        }
-                    )
-                );
-            } catch (error) {
-                throw new Error(
-                    "Internal processing error" + error.message
-                );
-            }
-            console.log(wsServerDataToSend);
+                    decisions.data.map(async (element) => {
+                        const deviceToSwitchData =
+                            await device_switching.findOne({
+                                where: {
+                                    device_id: element.device_id,
+                                    status: "active",
+                                },
+                            });
 
-            //? Last Stopped Here
-            let fillCount = 0;
+                        if (!_.isNull(deviceToSwitchData)) {
+                            const deviceToSwitch =
+                                deviceToSwitchData.dataValues;
+                            // const deviceToSwitch = decisions.data['device'];
 
-            let remainingRelays = [];
-            let doneRelays = [];
-
-            async function sendToWs(wsServerData, errorRepeatCount) {
-                let count = 0;
-
-                while (count < errorRepeatCount) {
-                    try {
-                        // const wsServerResponse = await axios.post("http://4.157.52.81:4001/relayswitch", wsServerData);
-                        const wsServerResponse1 = await fetch('http://20.253.48.86:4001/relayswitch', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(wsServerData)
-                        });
-                        const wsServerResponse = await wsServerResponse1.json();
-                        console.log("hello", JSON.stringify(wsServerResponse));
-                        if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300 && _.isEmpty(wsServerResponse.notFoundRelays)) {
-                            try {
-                                const deviceSwitchChangeResultsAfterSwitchingActive =
-                                    await device_switching.update(
-                                        { status: "inactive" },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    devicesIdsInnRoom,
+                            if (!_.isEmpty(deviceToSwitch)) {
+                                try {
+                                    // await Promise.all(deviceToSwitch.map(async (element)=>{
+                                    const deviceSwitchChangeResults =
+                                        await device_switching.update(
+                                            {
                                                 status: "inactive_pending",
                                             },
-                                        }
-                                    );
-                                console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
+                                            {
+                                                where: {
+                                                    device_id:
+                                                        deviceToSwitch.device_id,
+                                                    status: "active",
+                                                },
+                                            }
+                                        );
 
-                                const deviceSwitchChangeResultsAfterSwitchingInactive =
-                                    await device_switching.update(
-                                        { status: "active" },
-                                        {
-                                            where: {
-                                                device_id:
-                                                    devicesIdsInnRoom,
-                                                status: "active_pending",
-                                            },
-                                        }
-                                    );
-                                doneRelays.push(wsServerResponse.foundRelays);
-                                console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
-                                throw new Error("Operation Successful");
-                            } catch (error) {
-                                throw new Error(error.message);
-                            }
-                        } else if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300) {
-                            doneRelays.push(wsServerResponse.foundRelays);
-                            if (fillCount <= 3) {
-                                try {
-                                    const deciceIdList1 = async () => {
-                                        wsServerResponse.foundRelays.map.set(async (element) => {
-                                            Object.entries(element).forEach(async ([key, value]) => {
-                                                Object.entries(value).forEach(async ([k, v]) => {
-                                                    console.log("key", key);
-                                                    return await device.findOne(
-                                                        {
-                                                            attributes: ["device_id",],
-                                                            where: { relay_id: key, socket: k },
-                                                        });
-                                                });
-                                            });
-                                        });
+                                    if (
+                                        _.isEmpty(deviceSwitchChangeResults)
+                                    ) {
+                                        throw new Error(
+                                            "Error while updating switching scheme"
+                                        );
                                     }
-                                    const value1 = await deciceIdList1();
+                                    // }));
+                                } catch (error) {
+                                    throw new Error(error.message);
+                                }
+                            }
+                        }
+                    })
+                );
+            } catch (error) {
+                // Handle any errors that occur during the await calls
+                throw new Error(error.message);
+            }
+
+            let wsServerResponseCopy = {}
+            try {
+                await Promise.all(
+                    decisions.data.map(async (element) => {
+                        let deviceSwitchingAccordingToDecisions = {
+                            device_id: element.device_id,
+                            switch_status: element.switch_status,
+                            activity: "manual",
+                            wchich_schedule: null,
+                            status: "active_pending",
+                            changed_at: new Date(),
+                        };
+
+                        const newdeviceSwitchingAccordingToDecisions =
+                            await device_switching.create(
+                                deviceSwitchingAccordingToDecisions
+                            );
+                    })
+                );
+                const [relaySocketDeviceSwithResults, metadata] =
+                    await db.query(`SELECT device_switchings.device_id, device_switchings.switch_status, devices.relay_unit_id, devices.socket FROM device_switchings, devices WHERE devices.room_id=${roomId} AND device_switchings.activity='prediction' AND device_switchings.status='active_pending' AND device_switchings.device_id = devices.device_id`);
+                let wsServerDataToSend = {};
+                try {
+                    await Promise.all(
+                        relaySocketDeviceSwithResults.map(
+                            async (element) => {
+                                if (!wsServerDataToSend.hasOwnProperty(element.relay_unit_id)) {
+                                    wsServerDataToSend[
+                                        element.relay_unit_id
+                                    ] = {};
+                                }
+                                wsServerDataToSend[element.relay_unit_id][element.socket] = element.switch_status;
+                            }
+                        )
+                    );
+                } catch (error) {
+                    throw new Error(
+                        "Internal processing error" + error.message
+                    );
+                }
+                console.log(wsServerDataToSend);
+
+                //? Last Stopped Here
+                let fillCount = 0;
+
+                let remainingRelays = [];
+                let doneRelays = [];
+
+                async function sendToWs(wsServerData, errorRepeatCount) {
+                    let count = 0;
+
+                    while (count < errorRepeatCount) {
+                        try {
+                            // const wsServerResponse = await axios.post("http://4.157.52.81:4001/relayswitch", wsServerData);
+                            const wsServerResponse1 = await fetch(`${WS_SERVER_URL}/relayswitch`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(wsServerData)
+                            });
+                            const wsServerResponse = await wsServerResponse1.json();
+                            console.log("hello", JSON.stringify(wsServerResponse));
+                            if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300 && _.isEmpty(wsServerResponse.notFoundRelays)) {
+                                try {
                                     const deviceSwitchChangeResultsAfterSwitchingActive =
                                         await device_switching.update(
                                             { status: "inactive" },
                                             {
                                                 where: {
-                                                    device_id: value1,
+                                                    device_id:
+                                                        devicesIdsInnRoom,
                                                     status: "inactive_pending",
                                                 },
                                             }
                                         );
                                     console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
-                                    const deciceIdList2 = async () => {
-                                        wsServerResponse.foundRelays.map.set(async (element) => {
-                                            Object.entries(element).forEach(async ([key, value]) => {
-                                                Object.entries(value).forEach(async ([k, v]) => {
-                                                    console.log("key", key);
-                                                    return await device.findOne({
-                                                        attributes: ["device_id"],
-                                                        where: {
-                                                            relay_id:
-                                                                key,
-                                                            socket: k,
-                                                        },
-                                                    });
-                                                });
-                                            });
-                                        });
-                                    }
-                                    const value2 = await deciceIdList2();
+
                                     const deviceSwitchChangeResultsAfterSwitchingInactive =
                                         await device_switching.update(
                                             { status: "active" },
                                             {
                                                 where: {
-                                                    device_id: value2,
+                                                    device_id:
+                                                        devicesIdsInnRoom,
                                                     status: "active_pending",
                                                 },
-                                            });
+                                            }
+                                        );
+                                    doneRelays.push(wsServerResponse.foundRelays);
                                     console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
-
-
-                                    async () => {
-                                        await delay(500);
-                                    };
-
-                                    fillCount++;
-                                    const constForReturnVal =
-                                        await sendToWs(wsServerResponse.notFoundRelays, 3);
+                                    throw new Error("Operation Successful");
                                 } catch (error) {
                                     throw new Error(error.message);
                                 }
+                            } else if (wsServerResponse1.status >= 200 && wsServerResponse1.status < 300) {
+                                doneRelays.push(wsServerResponse.foundRelays);
+                                if (fillCount <= 3) {
+                                    try {
+                                        const deciceIdList1 = async () => {
+                                            wsServerResponse.foundRelays.map.set(async (element) => {
+                                                Object.entries(element).forEach(async ([key, value]) => {
+                                                    Object.entries(value).forEach(async ([k, v]) => {
+                                                        console.log("key", key);
+                                                        return await device.findOne(
+                                                            {
+                                                                attributes: ["device_id",],
+                                                                where: { relay_id: key, socket: k },
+                                                            });
+                                                    });
+                                                });
+                                            });
+                                        }
+                                        const value1 = await deciceIdList1();
+                                        const deviceSwitchChangeResultsAfterSwitchingActive =
+                                            await device_switching.update(
+                                                { status: "inactive" },
+                                                {
+                                                    where: {
+                                                        device_id: value1,
+                                                        status: "inactive_pending",
+                                                    },
+                                                }
+                                            );
+                                        console.log("deviceSwitchChangeResultsAfterSwitchingActive", deviceSwitchChangeResultsAfterSwitchingActive)
+                                        const deciceIdList2 = async () => {
+                                            wsServerResponse.foundRelays.map.set(async (element) => {
+                                                Object.entries(element).forEach(async ([key, value]) => {
+                                                    Object.entries(value).forEach(async ([k, v]) => {
+                                                        console.log("key", key);
+                                                        return await device.findOne({
+                                                            attributes: ["device_id"],
+                                                            where: {
+                                                                relay_id:
+                                                                    key,
+                                                                socket: k,
+                                                            },
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        }
+                                        const value2 = await deciceIdList2();
+                                        const deviceSwitchChangeResultsAfterSwitchingInactive =
+                                            await device_switching.update(
+                                                { status: "active" },
+                                                {
+                                                    where: {
+                                                        device_id: value2,
+                                                        status: "active_pending",
+                                                    },
+                                                });
+                                        console.log("deviceSwitchChangeResultsAfterSwitchingInactive", deviceSwitchChangeResultsAfterSwitchingInactive)
+
+
+                                        async () => {
+                                            await delay(500);
+                                        };
+
+                                        fillCount++;
+                                        const constForReturnVal =
+                                            await sendToWs(wsServerResponse.notFoundRelays, 3);
+                                    } catch (error) {
+                                        throw new Error(error.message);
+                                    }
+                                } else {
+                                    remainingRelays.push(wsServerResponse.notFoundRelays);
+                                    console.log("wsServerResponse.notFoundRelays")
+
+                                }
                             } else {
-                                remainingRelays.push(wsServerResponse.notFoundRelays);
-                                console.log("wsServerResponse.notFoundRelays")
+                                count++;
+                                async () => {
+                                    await delay(500);
+                                };
 
+                                if (count === errorRepeatCount) {
+                                    throw new Error(
+                                        "hello error"
+                                    );
+                                    wsServerResponseCopy = wsServerResponse;
+                                }
                             }
-                        } else {
-                            count++;
-                            async () => {
-                                await delay(500);
-                            };
-
-                            if (count === errorRepeatCount) {
-                                throw new Error(
-                                    "hello error"
-                                );
-                                wsServerResponseCopy = wsServerResponse;
-                            }
+                        } catch (error) {
+                            return error.message;
                         }
-                    } catch (error) {
-                        return error.message;
                     }
                 }
-            }
-            const wsServerData = { switchingScheme: wsServerDataToSend };
-            throw new Error(await sendToWs(wsServerData, 10));
-        } catch (error) {
-            console.log(error);
-            if (error.message === "hello error") {
-                try {
-                    const deciceIdList3 = async () => {
-                        wsServerResponseCopy.NotFoundRelays.map.set(async (element) => {
-                            Object.entries(element).forEach(async ([key, value]) => {
-                                Object.entries(value).forEach(async ([k, v]) => {
-                                    console.log("key", key);
-                                    return await device.findOne({
-                                        attributes: ["device_id"],
-                                        where: {
-                                            relay_id:
-                                                key,
-                                            socket: k,
-                                        },
+                const wsServerData = { switchingScheme: wsServerDataToSend };
+                throw new Error(await sendToWs(wsServerData, 10));
+            } catch (error) {
+                console.log(error);
+                if (error.message === "hello error") {
+                    try {
+                        const deciceIdList3 = async () => {
+                            wsServerResponseCopy.NotFoundRelays.map.set(async (element) => {
+                                Object.entries(element).forEach(async ([key, value]) => {
+                                    Object.entries(value).forEach(async ([k, v]) => {
+                                        console.log("key", key);
+                                        return await device.findOne({
+                                            attributes: ["device_id"],
+                                            where: {
+                                                relay_id:
+                                                    key,
+                                                socket: k,
+                                            },
+                                        });
                                     });
                                 });
                             });
-                        });
-                    }
-                    const value3 = await deciceIdList3();
-                    console.log(value3)
-                    const deviceSwitchChangeResultsAfterInternalErrorActive =
-                        await device_switching.update(
-                            { status: "active" },
-                            {
-                                where: {
-                                    device_id: value3,
-                                    status: "inactive_pending",
-                                },
-                            });
-                    console.log("deviceSwitchChangeResultsAfterInternalErrorActive", deviceSwitchChangeResultsAfterInternalErrorActive)
-                    const deciceIdList4 = async () => {
-                        wsServerResponseCopy.
-                            NotFoundRelays
-                            .map.set(async (element) => {
-                                Object.entries(element).forEach(
-                                    async ([key, value]) => {
-                                        Object.entries(
-                                            value
-                                        ).forEach(async ([k, v]) => {
-                                            console.log("key", key);
-                                            return await device.findOne({
-                                                attributes: ["device_id",],
-                                                where: { relay_id: key, socket: k },
+                        }
+                        const value3 = await deciceIdList3();
+                        console.log(value3)
+                        const deviceSwitchChangeResultsAfterInternalErrorActive =
+                            await device_switching.update(
+                                { status: "active" },
+                                {
+                                    where: {
+                                        device_id: value3,
+                                        status: "inactive_pending",
+                                    },
+                                });
+                        console.log("deviceSwitchChangeResultsAfterInternalErrorActive", deviceSwitchChangeResultsAfterInternalErrorActive)
+                        const deciceIdList4 = async () => {
+                            wsServerResponseCopy.
+                                NotFoundRelays
+                                .map.set(async (element) => {
+                                    Object.entries(element).forEach(
+                                        async ([key, value]) => {
+                                            Object.entries(
+                                                value
+                                            ).forEach(async ([k, v]) => {
+                                                console.log("key", key);
+                                                return await device.findOne({
+                                                    attributes: ["device_id",],
+                                                    where: { relay_id: key, socket: k },
+                                                });
                                             });
                                         });
-                                    });
+                                });
+                        }
+                        const value4 = await deciceIdList4();
+                        console.log(value4)
+                        const deviceSwitchDeleteResultsAfterInternalError =
+                            await device_switching.destroy({
+                                where: {
+                                    device_id: value4,
+                                    status: "active_pending",
+                                },
                             });
+                        console.log("deviceSwitchDeleteResultsAfterInternalError", deviceSwitchDeleteResultsAfterInternalError)
+
+
+                        throw new Error(
+                            "Switching Aborted due to internal error"
+                        );
+                    } catch (error) {
+                        throw new Error(error.message);
                     }
-                    const value4 = await deciceIdList4();
-                    console.log(value4)
-                    const deviceSwitchDeleteResultsAfterInternalError =
-                        await device_switching.destroy({
-                            where: {
-                                device_id: value4,
-                                status: "active_pending",
-                            },
-                        });
-                    console.log("deviceSwitchDeleteResultsAfterInternalError", deviceSwitchDeleteResultsAfterInternalError)
-
-
-                    throw new Error(
-                        "Switching Aborted due to internal error"
-                    );
-                } catch (error) {
-                    throw new Error(error.message);
                 }
-            }
 
-            throw new Error(error.message);
+                throw new Error(error.message);
+            }
+        } else {
+            throw new Error("Decision Invalid");
         }
-    } else {
-        throw new Error("Decision Invalid");
-    }
-    }catch(error){
+    } catch (error) {
         if (error.message === "Operation Successful") {
             res.status(200).send(error.message);
         } else {
