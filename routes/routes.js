@@ -16,6 +16,8 @@ import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
 
+import adminRouter from "./admin.route.js";
+import techSupportAddRouter from "./techSupportAdd.route.js";
 
 const router = Express.Router();
 
@@ -36,5 +38,7 @@ router.use('/techSupportRatingByCustomers', techRatingByCustomersRouter);
 router.use('/complaintHandling', complaintHandlingRouter);
 router.use('/customerServiceRequest', customerServiceRequestRouter);
 
+router.use('/admin', adminRouter)
+router.use('/techSupportAdd', techSupportAddRouter)
 
 export default router;
