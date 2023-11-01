@@ -11,7 +11,7 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
-export const getDecisions = async (decisionAlgoRequestData) => {
+export const getDecisions = (decisionAlgoRequestData) => {
 
     const {
         model_predictions,
@@ -31,19 +31,19 @@ export const getDecisions = async (decisionAlgoRequestData) => {
     const placeType = placeDetails.place_type;
     const placeCity = placeDetails.city;
 
-    const currentRoomStatusValue = await new promise(() => {
+    const currentRoomStatusValue = new promise(() => {
         return Math.random()*100;
     })
 
-    const tobeRoomStatusValue = await new promise(() => {
+    const tobeRoomStatusValue = new promise(() => {
         return Math.random()*100;
     });
 
     const deviceDetailsForCalculate = [];
 
     try {
-        await Promise.all(
-            currentSwitchingDetails.map(async (element) => {
+        Promise.all(
+            currentSwitchingDetails.map((element) => {
                 
                 let pushElement = {
                     device_id: element.device_id,
@@ -75,7 +75,7 @@ export const getDecisions = async (decisionAlgoRequestData) => {
 
     qty = term(lengthOfSS);
 
-    const initialPopulation = async (length, n)=>{
+    const initialPopulation = (length, n)=>{
 
         const uniqueArrays = new Set();
 
@@ -87,7 +87,7 @@ export const getDecisions = async (decisionAlgoRequestData) => {
         return Array.from(uniqueArrays).map((str) => JSON.parse(str)); // Convert the strings back to arrays
     }
         
-    const calculateStatusValue = async (arrayDevices, arrayStates)=>{
+    const calculateStatusValue = (arrayDevices, arrayStates)=>{
 
         let returnVal = 0;
 
