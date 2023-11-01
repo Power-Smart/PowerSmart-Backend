@@ -47,7 +47,7 @@ export const getDecisions = async (decisionAlgoRequestData) => {
                 
                 let pushElement = {
                     device_id: element.device_id,
-                    device_type: element.type,
+                    device_type: deviceDetails[element.device_id].type,
                 }
 
                 deviceDetailsForCalculate.push(pushElement);
@@ -58,6 +58,8 @@ export const getDecisions = async (decisionAlgoRequestData) => {
             "Error while processing elements: " + error.message
         );
     }
+
+
 
     let data = [];
 
