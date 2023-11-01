@@ -17,7 +17,9 @@ import {
     getAvilUnitCount,
     requestCustomer,
     cancelRequest,
-    addRoom
+    addRoom,
+    addSensorUnit,
+    deleteSensorUnit
 } from "../controllers/techAssigns.controller.js";
 
 const router = Express.Router();
@@ -39,6 +41,8 @@ router.delete("/devices/:techSupportID/:placeID/:roomID/:deviceID", deleteDevice
 router.get("/sensorunit/logs/:sensorUnitID/:limit", getSensorData);
 router.put("/sensorunit/:roomID/:sensorUnitID", updateSensorUnit);
 router.get("/sensorunit/:techSupportID/:placeID/:roomID", getSensorUnitOfRoom);
+router.post("/sensorunit/add/:techSupportID/:roomID", addSensorUnit);
+router.delete("/sensorunit/:techSupportID/:placeID/:roomID/:sensorUnitID", deleteSensorUnit);
 
 router.get("/count/:customerID/:type", getAvilUnitCount);
 
