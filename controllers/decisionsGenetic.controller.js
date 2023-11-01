@@ -222,12 +222,17 @@ export const getDecisions = async (decisionAlgoRequestData) => {
 
             if(ratioDiff < 0.8 || ratioDiff > 1.2){
 
-                population = mutation(chosenPopulation, );
+                population = mutation(chosenPopulation, deviceArray.length, chosenLength);
+
+                previousRatio = ratioDiff;
+                previuosLowest = lowestYet;
             }else{
-
+                break;
             }
-        }        
-
+        }
+        
+        chosenOne = chosenPopulation[0];
+        return chosenOne;
     }
 
     if(_.isEmpty(scheduleDetails)){
