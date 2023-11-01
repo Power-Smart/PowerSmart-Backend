@@ -7,6 +7,10 @@ const Item = db.define("item", {
         primaryKey: true,
         autoIncrement: true,
     },
+    item_code: { 
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     name: {
         type: DataTypes.STRING,
     },
