@@ -56,6 +56,7 @@ Customer.hasMany(CustomerOrderRequest, { foreignKey: "user_id", as: "customerOrd
 User.belongsTo(Chat, { foreignKey: "sender_id", as: "sender_chat" });
 User.belongsTo(Chat, { foreignKey: "receiver_id", as: "receiver_chat" });
 
+
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
 Room.hasMany(InformUsage, { foreignKey: "room_id", as: "informUsage" });
