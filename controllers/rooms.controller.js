@@ -2,6 +2,7 @@ import Room from "../models/room.model.js";
 import Device from "../models/device.model.js";
 import sequelize from "../models/index.js";
 import DeviceSwitching from "../models/deviceSwitching.model.js";
+import { notify } from "../utils/helperFunctions.js";
 
 export const getRooms = async (req, res) => {
     const { customerID, placeID } = req.params;
@@ -60,11 +61,11 @@ export const getRooms = async (req, res) => {
 export const addRoom = async (req, res) => {
     const { name, size, id, placeID, window_type, active_status, room_type } =
         req.body;
-
+    console.log(req.body);
     try {
         const room = await Room.create({
-            window_type: window_type,
-            is_active: active_status,
+            window_type,
+            is_active: false,
             size: size,
             type: room_type,
             place_id: placeID,
@@ -72,6 +73,7 @@ export const addRoom = async (req, res) => {
             name: name,
         });
         res.status(201).send(room);
+        await notify(id, id, "Room Created", `Room ${name} created successfully`);
         console.log("Room Created Successfully");
     } catch (error) {
         console.log(error);

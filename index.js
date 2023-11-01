@@ -26,10 +26,14 @@ const PORT = process.env.PORT || 3001;
 // );
 app.use(cors());
 app.use(passport.initialize());
+app.use((req, res, next) => {
+    if (req.is('application/x-www-form-urlencoded')) {
+        bodyParser.urlencoded({ extended: false })(req, res, next);
+    } else {
+        next();
+    }
+});
 app.use(Express.json());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json({ type: "application/*+json" }));
 app.use(cookieparser());
 
 import "./models/foreignKeys.js";

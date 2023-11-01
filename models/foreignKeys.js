@@ -1,6 +1,5 @@
 import Customer from "./customer.model.js";
 import User from "./user.model.js";
-import GuestUser from "./guestUser.model.js";
 import TechSupport from "./techSupport.model.js";
 import Chat from "./chat.model.js";
 import Message from "./message.model.js";
@@ -25,6 +24,37 @@ import InformUsage from "./informUsage.model.js";
 import SensorData from "./sensorData.model.js";
 import ModelPrediction from "./modelPrediction.model.js";
 import DeviceSwitching from "./deviceSwitching.model.js";
+import TechSupportPlace from "./techSupportPlace.model.js"
+import OwnedItem from "./ownedItem.model.js";
+
+// import Marketplace from "./marketplace.model.js";
+import CustomerOrderRequest from "./customerOrderRequest.model.js";
+import TechSupportRating from "./techSupportRating.model.js";
+import ComplaintHandling from "./complaintHandling.model.js";
+import CustomerServiceRequest from "./customerServiceRequest.model.js";
+import Notification from "./notification.model.js";
+import GuestUserSuggest from "./guestUserSuggest.model.js";
+import GuestUser from "./guestUser.model.js";
+
+// Define the association between the Customer and GuestUser models
+Customer.belongsTo(GuestUser, { foreignKey: "user_id", as: "guestUser" });
+GuestUser.hasOne(Customer, { foreignKey: "user_id", as: "customer" });
+
+
+ComplaintHandling.belongsTo(Customer, { foreignKey: "user_id", });
+Customer.hasMany(ComplaintHandling, { foreignKey: "customer_id", });
+
+ComplaintHandling.belongsTo(TechSupport, { foreignKey: "user_id", as: "techSupport" });
+TechSupport.hasMany(ComplaintHandling, { foreignKey: "tech_support_id", as: "complaintHandling" });
+
+
+// Define the association between the Customer and CustomerOrderRequest models
+CustomerOrderRequest.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
+Customer.hasMany(CustomerOrderRequest, { foreignKey: "user_id", as: "customerOrderRequest" });
+
+// Define the association between the Chat and User models
+User.belongsTo(Chat, { foreignKey: "sender_id", as: "sender_chat" });
+User.belongsTo(Chat, { foreignKey: "receiver_id", as: "receiver_chat" });
 
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
@@ -133,24 +163,20 @@ Admin.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.hasOne(Admin, { foreignKey: "user_id", as: "admin" });
 
 // Define the association between the Chat and Message models
-Message.belongsTo(Chat, { foreignKey: "chat_id", as: "chat" });
-Chat.hasMany(Message, { foreignKey: "chat_id", as: "messages" });
+// Message.belongsTo(Chat, { foreignKey: "chat_id", as: "chat" });
+// Chat.hasMany(Message, { foreignKey: "chat_id", as: "messages" });
 
 // Define the association between the Customer and User models
 Customer.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.hasOne(Customer, { foreignKey: "user_id", as: "customer" });
 
-// Define the association between the GuestUser and User models
-GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });
-User.hasOne(GuestUser, { foreignKey: "guest_id", as: "guestUser" });
+
 
 // Define the association between the TechSupport and User models
 TechSupport.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.hasOne(TechSupport, { foreignKey: "user_id", as: "techSupport" });
 
-// Define the association between the Chat and User models
-Chat.belongsTo(User, { foreignKey: "user_id", as: "user" });
-User.hasOne(Chat, { foreignKey: "user_id", as: "chat" });
+
 
 Device.belongsTo(Room, { foreignKey: "room_id", as: "room" });
 Room.hasMany(Device, { foreignKey: "room_id", as: "devices" });
@@ -196,3 +222,15 @@ Order.belongsTo(TechSupport, {
     as: "techSupport",
 });
 TechSupport.hasMany(Order, { foreignKey: "tech_support_id", as: "order" });
+
+TechSupportPlace.belongsTo(TechSupport, { foreignKey: "tech_support_id", as: "techSupport" });
+TechSupport.hasMany(TechSupportPlace, { foreignKey: "tech_support_id", as: "techSupportPlace" });
+TechSupportPlace.belongsTo(Place, { foreignKey: "place_id", as: "place" });
+Place.hasMany(TechSupportPlace, { foreignKey: "place_id", as: "techSupportPlace" });
+
+// // Define the association between the GuestUser and User models
+// GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });
+// User.hasOne(GuestUser, { foreignKey: "guest_id", as: "guestUser" });
+
+Notification.belongsTo(User, { foreignKey: "sender_id", as: "user" });
+Notification.belongsTo(User, { foreignKey: "receiver_id", as: "receiver" });

@@ -4,12 +4,18 @@ import User from "../models/user.model.js";
 export const getUser = async (req, res) => {
     let id = req.params.id;
     try {
+        const user = await User.findByPk(id);
         const customer = await Customer.findByPk(id);
+
+        customer.dataValues.first_name = user.dataValues.first_name;
+        customer.dataValues.last_name = user.dataValues.last_name;
+        
         res.send(customer);
     } catch (e) {
         res.status(500).send(e);
     }
 };
+
 
 
 export const completeCustomerProfile = async (req, res) => {
@@ -50,6 +56,8 @@ export const updateCustomerProfile = async (req, res) => {
         res.status(500).send("Error updating profile");
     }
 };
+
+
 
 export const saveProfile = async (req, res) => {
     console.log(req.file)
