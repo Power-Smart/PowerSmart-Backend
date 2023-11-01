@@ -16,10 +16,12 @@ const Schedule = db.define("schedule", {
     start_time: {
         type: DataTypes.TIME,
         timezone: true,
+        allowNull:false
     },
     end_time: {
         type: DataTypes.TIME,
         timezone: true,
+        allowNull:false
     },
     start_day: {
         type: DataTypes.CHAR(3),
