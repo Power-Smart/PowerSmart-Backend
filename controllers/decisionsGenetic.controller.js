@@ -31,14 +31,6 @@ export const getDecisions = (decisionAlgoRequestData) => {
     const placeType = placeDetails.place_type;
     const placeCity = placeDetails.city;
 
-    const currentRoomStatusValue = new promise(() => {
-        return Math.random()*100;
-    })
-
-    const tobeRoomStatusValue = new promise(() => {
-        return Math.random()*100;
-    });
-
     const deviceDetailsForCalculate = [];
 
     try {
@@ -47,6 +39,7 @@ export const getDecisions = (decisionAlgoRequestData) => {
                 
                 let pushElement = {
                     device_id: element.device_id,
+                    switching_status: element.switching_status,
                     device_type: deviceDetails[element.device_id].type,
                 }
 
@@ -59,7 +52,15 @@ export const getDecisions = (decisionAlgoRequestData) => {
         );
     }
 
+    const currentRoomStatusValue = new promise((currentSwitching) => {
+        // return Math.random()*100;
 
+
+    })
+
+    const tobeRoomStatusValue = new promise(() => {
+        return Math.random()*100;
+    });
 
     let data = [];
 
