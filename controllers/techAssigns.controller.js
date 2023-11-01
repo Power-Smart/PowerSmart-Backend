@@ -11,8 +11,8 @@ import DeviceSwitching from "../models/deviceSwitching.model.js";
 import SensorUnit from "../models/sensorUnit.model.js";
 import SensorData from "../models/sensorData.model.js";
 import OwnedItem from "../models/ownedItem.model.js";
-
 import sequelize from "../models/index.js";
+import { notify } from "../utils/helperFunctions.js";
 
 export const assignedCustomers = async (req, res) => {
     const { techSupportID } = req.params;
@@ -73,40 +73,92 @@ export const assignedPlacesByCustomer = async (req, res) => {
     }
 }
 
+export const requestCustomer = async (req, res) => {
+    const { tech_support_id, place_id } = req.params;
+    try {
+        await TechSupportPlace.update({
+            access_type: 2,
+        }, {
+            where: {
+                tech_support_id: tech_support_id,
+                place_id: place_id,
+            },
+        });
+        res.status(200).json({ message: "Request Sent" });
+        const customer = await CustomerPlace.findOne({
+            where: {
+                place_id: place_id,
+            },
+        });
+        if (customer) {
+            await notify(tech_support_id, customer.dataValues.user_id, "Access Request", "Tech Support Requested Access to your place");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const cancelRequest = async (req, res) => {
+    const { tech_support_id, place_id } = req.params;
+    try {
+        await TechSupportPlace.update({
+            access_type: 0,
+        }, {
+            where: {
+                tech_support_id: tech_support_id,
+                place_id: place_id,
+            },
+        });
+        res.status(200).json({ message: "Request Cancelled" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export const assignedRoomsByPlace = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     try {
-        if (!isAssignedToPlace(techSupportID, placeID)) {
-            res.status(403).json({ error: "Forbidden" });
+        if (await hasAccess(techSupportID, placeID)) {
+            if (!isAssignedToPlace(techSupportID, placeID)) {
+                res.status(403).json({ error: "Forbidden" });
+            } else {
+                const rooms = await Room.findAll({
+                    where: {
+                        place_id: placeID,
+                    },
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"]
+                    },
+                });
+                res.status(200).json(rooms);
+            }
         } else {
-            const rooms = await Room.findAll({
-                where: {
-                    place_id: placeID,
-                },
-                attributes: {
-                    exclude: ["createdAt", "updatedAt"]
-                },
-            });
-            res.status(200).json(rooms);
+            res.status(401).json({ error: "Unauthorized" });
         }
-
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 }
 
+
 export const relayUnitsOfPlace = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     try {
-        if (!isAssignedToPlace(techSupportID, placeID)) {
-            res.status(403).json({ error: "Forbidden" });
+        if (await hasAccess(techSupportID, placeID)) {
+            if (!isAssignedToPlace(techSupportID, placeID)) {
+                res.status(403).json({ error: "Forbidden" });
+            } else {
+                const relayUnits = await RelayUnit.findAll({
+                    where: {
+                        place_id: placeID,
+                    },
+                });
+                res.status(200).json(relayUnits);
+            }
         } else {
-            const relayUnits = await RelayUnit.findAll({
-                where: {
-                    place_id: placeID,
-                },
-            });
-            res.status(200).json(relayUnits);
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -117,15 +169,19 @@ export const addRelayUnit = async (req, res) => {
     const { techSupportID, placeID } = req.params;
     const { relayUnit } = req.body;
     try {
-        if (!isAssignedToPlace(techSupportID, placeID)) {
-            res.status(403).json({ error: "Forbidden" });
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (!isAssignedToPlace(techSupportID, placeID)) {
+                res.status(403).json({ error: "Forbidden" });
+            } else {
+                const newRelayUnit = await RelayUnit.create({
+                    ...relayUnit,
+                    place_id: placeID,
+                    status: "disabled"
+                });
+                res.status(200).json(newRelayUnit);
+            }
         } else {
-            const newRelayUnit = await RelayUnit.create({
-                ...relayUnit,
-                place_id: placeID,
-                status: "disabled"
-            });
-            res.status(200).json(newRelayUnit);
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -137,17 +193,21 @@ export const updateRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     const { relayUnit } = req.body;
     try {
-        if (!isAssignedToPlace(techSupportID, placeID)) {
-            res.status(403).json({ error: "Forbidden" });
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (!isAssignedToPlace(techSupportID, placeID)) {
+                res.status(403).json({ error: "Forbidden" });
+            } else {
+                await RelayUnit.update({
+                    ...relayUnit,
+                }, {
+                    where: {
+                        relay_unit_id: relayUnitID,
+                    },
+                });
+                res.status(200).json(relayUnit);
+            }
         } else {
-            await RelayUnit.update({
-                ...relayUnit,
-            }, {
-                where: {
-                    relay_unit_id: relayUnitID,
-                },
-            });
-            res.status(200).json(relayUnit);
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -157,15 +217,19 @@ export const updateRelayUnit = async (req, res) => {
 export const deleteRelayUnit = async (req, res) => {
     const { techSupportID, placeID, relayUnitID } = req.params;
     try {
-        if (!isAssignedToPlace(techSupportID, placeID)) {
-            res.status(403).json({ error: "Forbidden" });
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (!isAssignedToPlace(techSupportID, placeID)) {
+                res.status(403).json({ error: "Forbidden" });
+            } else {
+                await RelayUnit.destroy({
+                    where: {
+                        relay_unit_id: relayUnitID,
+                    },
+                });
+                res.status(200).json({ relay_unit_id: relayUnitID });
+            }
         } else {
-            await RelayUnit.destroy({
-                where: {
-                    relay_unit_id: relayUnitID,
-                },
-            });
-            res.status(200).json({ relay_unit_id: relayUnitID });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -176,18 +240,22 @@ export const deleteRelayUnit = async (req, res) => {
 export const getDevicesOfRoom = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     try {
-        if (isAssignedToPlace(techSupportID, placeID)) {
-            const devices = await Device.findAll({
-                where: {
-                    room_id: roomID,
-                },
-                attributes: {
-                    exclude: ["createdAt", "updatedAt", "room_id"]
-                },
-            })
-            res.status(200).json(devices);
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                const devices = await Device.findAll({
+                    where: {
+                        room_id: roomID,
+                    },
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt", "room_id"]
+                    },
+                })
+                res.status(200).json(devices);
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
         } else {
-            res.status(403).json({ error: "Forbidden" });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -199,21 +267,25 @@ export const addDevice = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     const { device } = req.body;
     try {
-        if (isAssignedToPlace(techSupportID, placeID)) {
-            const newDevice = await Device.create({
-                ...device,
-                is_active: false,
-                room_id: roomID,
-            });
-            await DeviceSwitching.create({
-                device_id: newDevice.device_id,
-                switch_status: false,
-                activity: "none",
-                status: "active"
-            });
-            res.status(200).json(newDevice);
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                const newDevice = await Device.create({
+                    ...device,
+                    is_active: false,
+                    room_id: roomID,
+                });
+                await DeviceSwitching.create({
+                    device_id: newDevice.device_id,
+                    switch_status: false,
+                    activity: "none",
+                    status: "active"
+                });
+                res.status(200).json(newDevice);
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
         } else {
-            res.status(403).json({ error: "Forbidden" });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -225,18 +297,22 @@ export const updateDevice = async (req, res) => {
     const { techSupportID, placeID, roomID, deviceID } = req.params;
     const { device } = req.body;
     try {
-        if (isAssignedToPlace(techSupportID, placeID)) {
-            await Device.update({
-                ...device,
-            }, {
-                where: {
-                    device_id: deviceID,
-                    room_id: roomID,
-                },
-            });
-            res.status(200).json(device);
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                await Device.update({
+                    ...device,
+                }, {
+                    where: {
+                        device_id: deviceID,
+                        room_id: roomID,
+                    },
+                });
+                res.status(200).json(device);
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
         } else {
-            res.status(403).json({ error: "Forbidden" });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -247,16 +323,20 @@ export const updateDevice = async (req, res) => {
 export const deleteDevice = async (req, res) => {
     const { techSupportID, placeID, roomID, deviceID } = req.params;
     try {
-        if (isAssignedToPlace(techSupportID, placeID)) {
-            await Device.destroy({
-                where: {
-                    device_id: deviceID,
-                    room_id: roomID,
-                },
-            });
-            res.status(200).json({ device_id: deviceID });
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                await Device.destroy({
+                    where: {
+                        device_id: deviceID,
+                        room_id: roomID,
+                    },
+                });
+                res.status(200).json({ device_id: deviceID });
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
         } else {
-            res.status(403).json({ error: "Forbidden" });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (err) {
         console.log(err);
@@ -267,18 +347,22 @@ export const deleteDevice = async (req, res) => {
 export const getSensorUnitOfRoom = async (req, res) => {
     const { techSupportID, placeID, roomID } = req.params;
     try {
-        if (isAssignedToPlace(techSupportID, placeID)) {
-            const sensorUnit = await SensorUnit.findOne({
-                where: {
-                    room_id: roomID,
-                },
-                attributes: {
-                    exclude: ["createdAt", "updatedAt", "room_id"]
-                },
-            });
-            res.status(200).json(sensorUnit.dataValues);
+        if (!await hasAccess(techSupportID, placeID)) {
+            if (isAssignedToPlace(techSupportID, placeID)) {
+                const sensorUnit = await SensorUnit.findOne({
+                    where: {
+                        room_id: roomID,
+                    },
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt", "room_id"]
+                    },
+                });
+                res.status(200).json(sensorUnit.dataValues);
+            } else {
+                res.status(403).json({ error: "Forbidden" });
+            }
         } else {
-            res.status(403).json({ error: "Forbidden" });
+            res.status(401).json({ error: "Unauthorized" });
         }
     } catch (error) {
         console.log(error);
@@ -361,6 +445,20 @@ async function isAssignedToPlace(techSupportID, placeID) {
         },
     });
     if (isAssigned?.length !== 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+async function hasAccess(tech_support_id, place_id) {
+    const access = await TechSupportPlace.findOne({
+        where: {
+            tech_support_id,
+            place_id,
+        }
+    });
+    if (access.dataValues.access_type === 1) {
         return true;
     } else {
         return false;

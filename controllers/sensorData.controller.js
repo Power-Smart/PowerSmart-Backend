@@ -3,6 +3,8 @@ import Place from "../models/place.model.js";
 import CustomerPlace from "../models/customerPlace.model.js";
 import Room from "../models/room.model.js";
 import sequelize from "../models/index.js";
+import SensorUnit from "../models/sensorUnit.model.js";
+import SensorData from "../models/sensorData.model.js";
 
 // export const sendSensorDara = async (req, res) => {
 //     const { user_id, place_id } = req.params;
@@ -13,6 +15,55 @@ import sequelize from "../models/index.js";
 //         sse_client.write(`data:${JSON.stringify(sensorData.dataValues)}\n\n`);
 //     }
 // };
+
+export const getRoomStatus = async (req, res) => {
+    const { room_id } = req.params;
+    if (room_id) {
+        const room = await Room.findOne({
+            where: {
+                room_id,
+            },
+            attributes: [
+                "room_id"
+            ],
+        });
+
+        if (room) {
+            const sensor_unit = await SensorUnit.findOne({
+                where: {
+                    room_id,
+                },
+                attributes: [
+                    "sensor_unit_id"
+                ],
+            });
+
+            if (sensor_unit) {
+                const sensor_data = await SensorData.findAll({
+                    where: {
+                        sensor_unit_id: sensor_unit.sensor_unit_id,
+                    },
+                    order: [
+                        ['updatedAt', 'DESC']
+                    ],
+                    attributes: {
+                        exclude: ['sensor_unit_id', 'createdAt', 'updatedAt', 'id']
+                    },
+                    limit: 1
+                });
+
+                res.json(sensor_data ? sensor_data[0] : {});
+            } else {
+                res.json({});
+            }
+        } else {
+            res.json({});
+        }
+    } else {
+        res.json({});
+    }
+
+}
 
 export const sendPlaceSensorData = async (req, res) => {
     const { user_id } = req.params;

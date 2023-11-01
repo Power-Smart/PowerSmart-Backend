@@ -67,9 +67,9 @@ export const getPlace = async (req, res) => {
 };
 
 export const addPlace = async (req, res) => {
-    const { id, name, address, postal_code, place_type, country, city } =
+    const { id, name, address, postal_code, place_type, country, city, time_zone } =
         req.body;
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const place = new Place({
             name,
@@ -77,6 +77,7 @@ export const addPlace = async (req, res) => {
             country,
             city,
             address,
+            time_zone,
             place_type,
             is_active: false,
         });
@@ -98,7 +99,7 @@ export const addPlace = async (req, res) => {
 
 export const updatePlace = async (req, res) => {
     const { placeID } = req.params;
-    const { name, address, postal_code, place_type, country, city } = req.body;
+    const { name, address, postal_code, place_type, country, city, time_zone } = req.body;
 
     try {
         const place = await Place.findByPk(placeID);
@@ -110,6 +111,7 @@ export const updatePlace = async (req, res) => {
         place.postal_code = postal_code;
         place.place_type = place_type;
         place.country = country;
+        place.time_zone = time_zone;
         place.city = city;
         await place.save();
         res.status(200).send(place.dataValues);

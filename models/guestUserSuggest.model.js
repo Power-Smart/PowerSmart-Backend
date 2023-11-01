@@ -1,29 +1,32 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const GuestUser = db.define("guest_user", {
-    user_id: {
+const GuestUserSuggest = db.define("guest_user_suggest", {
+    suggest_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement:true
     },
+    user_id: {
+        type: DataTypes.INTEGER,
+    },
     customer_id: {
         type: DataTypes.INTEGER,
     },
-    guest_name: {
+    place_id: {
+        type: DataTypes.INTEGER,
+    },
+    room_id: {
+        type: DataTypes.INTEGER,
+    },
+    suggest_description: {
         type: DataTypes.STRING,
     },
-    guest_profile_pic: {
-        type: DataTypes.STRING,
-    },
-    guest_email: {
-        type: DataTypes.STRING,
-        // unique: true,
-    },
-    is_ban: {
+    is_read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+
 });
 
-export default GuestUser;
+export default GuestUserSuggest;

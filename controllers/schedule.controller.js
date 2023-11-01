@@ -7,6 +7,7 @@ import room from "../models/room.model.js";
 import Place from "../models/place.model.js";
 import Schedule from "../models/schedule.model.js";
 import axios from "axios";
+import { QueryTypes } from "sequelize";
 import db from "../models/index.js";
 import _ from "lodash";
 import DeviceSchedule from "../models/deviceSchedule.model.js";
@@ -293,5 +294,20 @@ export const updateSchedule = async (req, res) => {
         );
     } catch (error) {
         res.status(500).json(error.message);
+    }
+}
+
+export const getUserSchedules = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const schedules = await db.query(`SELECT schedules.schedule_id, schedules.name, schedules.status, schedules.start_time, schedules.end_time, 
+                                                schedules.start_day, schedules.end_day, places.name as place_name, devices.type, device_schedules.switch_status 
+                                            FROM schedules, devices, device_schedules, places 
+                                            WHERE devices.device_id = device_schedules.device_id AND device_schedules.schedule_id = schedules.schedule_id 
+                                                AND places.place_id = schedules.place_id AND
+                                            schedules.user_id = ${userId}`, { type: QueryTypes.SELECT });
+        res.status(200).json(schedules);
+    } catch (error) {
+        res.status(500).json([]);
     }
 }

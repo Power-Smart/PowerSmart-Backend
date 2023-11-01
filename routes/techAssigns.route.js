@@ -14,7 +14,9 @@ import {
     getSensorUnitOfRoom,
     getSensorData,
     updateSensorUnit,
-    getAvilUnitCount
+    getAvilUnitCount,
+    requestCustomer,
+    cancelRequest
 } from "../controllers/techAssigns.controller.js";
 
 const router = Express.Router();
@@ -38,5 +40,8 @@ router.put("/sensorunit/:roomID/:sensorUnitID", updateSensorUnit);
 router.get("/sensorunit/:techSupportID/:placeID/:roomID", getSensorUnitOfRoom);
 
 router.get("/count/:customerID/:type", getAvilUnitCount);
+
+router.get("/access/request/:tech_support_id/:place_id", requestCustomer);
+router.get("/access/cancel/:tech_support_id/:place_id", cancelRequest);
 
 export default router;

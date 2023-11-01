@@ -16,3 +16,4 @@ router.get("/complaintInfo/:complaintId", getComplaintInfo);
 router.put("/complaintEdit/:complaintId", updateComplaint);
 
 export default router;
+
