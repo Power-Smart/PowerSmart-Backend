@@ -22,7 +22,7 @@ export const getCustomerOrderRequests = async (req, res) => {
                     ],
                 },
             ],
-            attributes: ["tech_support_id", "order_id", "num_of_places", "num_of_rooms", "num_of_devices", "order_description"],
+            attributes: ["user_id","assign_tech_support_id", "order_id", "place_id", "num_of_rooms", "num_of_devices", "order_description","is_order_completed","is_tech_support_assigned"],
         });
         res.status(200).json(results);
     } catch (error) {
@@ -49,7 +49,7 @@ export const deleteCustomerOrderRequest = async (req, res) => {
 export const addCustomerOrderRequest = async (req, res) => {
     try {
         const { customer_id,place_id,order_description,number_of_rooms,number_of_devices } = req.body;
-        console.log(req.body)
+        // console.log(req.body)
         const results = await customerOrderRequest.create({
             user_id: customer_id,
             place_id: place_id,
