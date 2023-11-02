@@ -11,7 +11,7 @@ import db from "../models/index.js";
 import _ from "lodash";
 import fetch from "node-fetch";
 
-export const getDecisions = (decisionAlgoRequestData) => {
+export const getDecisions = async (decisionAlgoRequestData) => {
 
     const {
         model_predictions,
@@ -34,25 +34,23 @@ export const getDecisions = (decisionAlgoRequestData) => {
     const deviceDetailsForCalculate = [];
 
     try {
-        Promise.all(
-            currentSwitchingDetails.map((element) => {
-                
-                let pushElement = {
-                    device_id: element.device_id,
-                    switching_status: element.switching_status,
-                    device_type: deviceDetails[element.device_id].type,
-                }
+        currentSwitchingDetails.map((element) => {
+            
+            let pushElement = {
+                device_id: element.device_id,
+                switching_status: element.switching_status,
+                device_type: deviceDetails[element.device_id].type,
+            }
 
-                deviceDetailsForCalculate.push(pushElement);
-            })
-        );
+            deviceDetailsForCalculate.push(pushElement);
+        })
     } catch (error) {
         throw new Error(
             "Error while processing elements: " + error.message
         );
     }
 
-    const currentRoomStatusValue = new promise((arrayDevices) => {
+    const currentRoomStatusValue = (arrayDevices) => {
         // return Math.random()*100;
         let returnVal = 0;
 
@@ -63,44 +61,40 @@ export const getDecisions = (decisionAlgoRequestData) => {
                 if(element.switching_status === true){
                     switch (deviceType) {
 
-                        case "Type1":
+                        case "LED 10W":
                             returnVal+=0.1;
                             break;
                       
-                        case "Type2":
+                        case "LED 30W":
                             returnVal+=0.2;
                             break;
                       
-                        case "Type3":
+                        case "CFL 50W":
                             returnVal+=0.3;
                             break;
         
-                        case "Type4":
+                        case "CFL 80W":
                             returnVal+=0.4;
                             break;
 
-                        case "Type5":
+                        case "CFL 100W":
                             returnVal+=0.5;
                             break;
                         
-                        case "Type6":
+                        case "Tube Light 100W":
                             returnVal+=0.6;
                             break;
                         
-                        case "Type7":
+                        case "Tube Light 200W":
                             returnVal+=0.7;
                             break;
         
-                        case "Type8":
+                        case "Fan 250W":
                             returnVal+=0.8;
                             break;
                       
-                        case "Type9":
+                        case "Fan 400W":
                             returnVal+=0.9;
-                            break;
-        
-                        case "Type0":
-                            returnVal+=0;
                             break;
 
                         default:
@@ -115,7 +109,7 @@ export const getDecisions = (decisionAlgoRequestData) => {
         });
 
         return (returnVal/arrayDevices.length)*100;
-    })
+    }
 
 
     const tobeRoomStatusValue = (roomOccupancy,
@@ -131,11 +125,10 @@ export const getDecisions = (decisionAlgoRequestData) => {
         const windowTypeWeight = 0.1;
         const roomSizeWeight = 0.15;
         const placeTypeWeight = 0.2;
-        const placeCityWeight = 0.2;
 
-        const occupancyValue = roomOccupancy / 100;
+        const occupancyValue = roomOccupancy  === "High"? 80: roomOccupancy === "Medium"? 60: roomOccupancy === "Low"? 40:20;
 
-        let roomTypeValue, windowTypeValue, sizeValue, placeTypeValue, placeCityValue;
+        let roomTypeValue, windowTypeValue, sizeValue, placeTypeValue;
 
 
         if (roomType === 'type1') {
@@ -146,29 +139,69 @@ export const getDecisions = (decisionAlgoRequestData) => {
             roomTypeValue = 0.7;
         }
 
-        if (roomWindowType === 'window1') {
+        if (roomSize > 1000) {
+            sizeValue = 0.9;
+        } else if (roomSize >400) {
+            sizeValue = 0.8;
+        } else {
+            sizeValue = 0.7;
+        }
+
+        if (roomWindowType === 'big') {
             windowTypeValue = 0.9;
-        } else if (roomWindowType === 'window2') {
+        } else if (roomWindowType === 'medium') {
             windowTypeValue = 0.8;
         } else {
             windowTypeValue = 0.7;
         }
 
-        if (roomWindowType === 'window1') {
-            windowTypeValue = 0.9;
-        } else if (roomWindowType === 'window2') {
-            windowTypeValue = 0.8;
+        if (placeType === 'economic') {
+            placeTypeValue = 0.9;
+        } else if (placeType === 'institute') {
+            placeTypeValue = 0.8;
         } else {
-            windowTypeValue = 0.7;
+            placeTypeValue = 0.7;
         }
+
+        const apiKey = 'd3fd245a9bf35db532ffbc78fa9ee53c'; // Replace with your actual OpenWeather API key
+        const city = placeCity;
+        
+        let latAndlon;// Replace with the city you want to get weather data for
+
+        const apiUrlGeoCode = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${apiKey}`;
+
+        fetch(apiUrlGeoCode)
+        .then((response) => {
+            if (!response.ok) {
+            throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then((data) => {
+            latAndlon = data; // Store the weather data in a variable
+            console.log('Weather Data:', weatherData);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+
+
+
+        // if (placeType === 'economic') {
+        //     placeTypeValue = 0.9;
+        // } else if (placeType === 'institute') {
+        //     placeTypeValue = 0.8;
+        // } else {
+        //     placeTypeValue = 0.7;
+        // }
 
         const roomStatusValue =
             occupancyValue * occupancyWeight +
             roomTypeValue * roomTypeWeight +
             windowTypeValue * windowTypeWeight +
             sizeValue * roomSizeWeight +
-            placeTypeValue * placeTypeWeight +
-            placeCityValue * placeCityWeight;
+            placeTypeValue * placeTypeWeight;
 
         const roomStatus = Math.min(Math.max(roomStatusValue * 100, 1), 100);
 
@@ -212,49 +245,45 @@ export const getDecisions = (decisionAlgoRequestData) => {
 
             for(i = 0; i < arrayDevices.length; i++){
                 const deviceType = element.device_type;
-                if(arrayStates[i] == 1){
+                if(element.switching_status === true){
                     switch (deviceType) {
-
-                        case "Type1":
+                
+                        case "LED 10W":
                             returnVal+=0.1;
                             break;
                       
-                        case "Type2":
+                        case "LED 30W":
                             returnVal+=0.2;
                             break;
                       
-                        case "Type3":
+                        case "CFL 50W":
                             returnVal+=0.3;
                             break;
-        
-                        case "Type4":
+                        
+                        case "CFL 80W":
                             returnVal+=0.4;
                             break;
-
-                        case "Type5":
+                
+                        case "CFL 100W":
                             returnVal+=0.5;
                             break;
                         
-                        case "Type6":
+                        case "Tube Light 100W":
                             returnVal+=0.6;
                             break;
                         
-                        case "Type7":
+                        case "Tube Light 200W":
                             returnVal+=0.7;
                             break;
-        
-                        case "Type8":
+                        
+                        case "Fan 250W":
                             returnVal+=0.8;
                             break;
                       
-                        case "Type9":
+                        case "Fan 400W":
                             returnVal+=0.9;
                             break;
-        
-                        case "Type0":
-                            returnVal+=0;
-                            break;
-
+                
                         default:
                             returnVal+=Math.random();
                             break;
@@ -365,6 +394,7 @@ export const getDecisions = (decisionAlgoRequestData) => {
 
     if(_.isEmpty(scheduleDetails)){
 
+        s
         
 
     }else{
