@@ -68,7 +68,7 @@ export const toggleDevice = async (req, res) => {
 
         // console.log("wsDataToSendOnce : ", wsDataToSendOnce);
 
-        fetch('http://20.253.48.86:4001/relayswitch', {
+        fetch('http://cronserver:4001/relayswitch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

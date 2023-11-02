@@ -5,7 +5,7 @@ import { switchDevicesManually } from "../controllers/control.controller.js";
 const router = Express.Router();
 
 router.post("/scheduledSwitch", deviceSwitch)
-router.get("/toggle/:deviceID/:status", switchDevicesManually);
+router.get("/toggle/:deviceID/:status", toggleDevice);
 router.get("/:userID/:roomID", getDevicesData);
 router.get("/:userID/:roomID/:deviceID", getDevice);
 
