@@ -9,16 +9,16 @@ const Order = db.define("order", {
     },
     item_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        // allowNull: false,
     },
     quantity: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        // allowNull: false,
     },
     order_date: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
-        allowNull: false,
+        // allowNull: false,
     },
     is_paid: {
         type: DataTypes.BOOLEAN,
@@ -27,7 +27,7 @@ const Order = db.define("order", {
     },
     place_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        // allowNull: false,
     },
     payment_id: {
         type: DataTypes.INTEGER,
