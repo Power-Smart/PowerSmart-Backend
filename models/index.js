@@ -14,13 +14,13 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
         acquire: dbConfig.pool.acquire,
         idle: dbConfig.pool.idle,
     },
-    // dialectOptions: {
-    //     ssl: {
-    //         require: true,
-    //         rejectUnauthorized: false,
-    //         ca: fs.readFileSync('config/ssl/ca.crt').toString(),
-    //     },
-    // },
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false,
+            ca: fs.readFileSync('config/ssl/ca.crt').toString(),
+        },
+    },
 });
 
 export default sequelize;
