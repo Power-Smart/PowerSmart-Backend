@@ -1,4 +1,4 @@
-import MarketPlace from "../models/marketplace.model.js";
+import MarketPlace from "../models/marketPlace.model.js";
 
 
 export const getMarketPlaceItems = async (req, res) => {
