@@ -140,4 +140,59 @@ export const getAllGuestSuggest = async (req, res) => {
     }
 };
 
+export const takeActionAndNotWant = async (req, res) => {
+    try {
+        const { suggest_id } = req.body;
 
+        const guestUserSuggest = await GuestUserSuggest.findOne({
+            where: {
+                suggest_id: suggest_id
+            }
+        });
+        if (guestUserSuggest.is_read) {
+            guestUserSuggest.is_read = false;
+        } else {
+            guestUserSuggest.is_read = true;
+        }
+        await guestUserSuggest.save();
+        res.send(guestUserSuggest);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+
+export const sendSMSWhenAcceptGusetUserRequest = async (req, res) => {
+    client.messages
+        .create({
+            body: 'Thank you for your kind words and feedback! 🌟',
+            from: '+12255353664',
+            to: '+94784717431'
+        })
+        .then(message => {
+            console.log(message.sid);
+            res.status(200).json({ message: 'SMS sent successfully' }); 
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({ message: 'Failed to send SMS' }); 
+        });
+};
+
+
+export const sendSMSWhenRejectGusetUserRequest = async (req, res) => {
+    client.messages
+        .create({
+            body: 'Thank you for your kind words and feedback! 🌟',
+            from: '+12255353664',
+            to: '+94784717431'
+        })
+        .then(message => {
+            console.log(message.sid);
+            res.status(200).json({ message: 'SMS sent successfully' }); 
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({ message: 'Failed to send SMS' }); 
+        });
+};
