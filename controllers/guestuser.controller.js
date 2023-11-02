@@ -131,6 +131,7 @@ export const getAllGuestSuggest = async (req, res) => {
             allGuestUser[i].dataValues.place_name = place.name;
             allGuestUser[i].dataValues.room_name = room.name;
             allGuestUser[i].dataValues.guest_name = gusetUser.guest_name;
+            allGuestUser[i].dataValues.guest_profile_pic = gusetUser.guest_profile_pic;
         }
 
         res.send(allGuestUser);
@@ -138,7 +139,6 @@ export const getAllGuestSuggest = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
-
 
 export const takeActionAndNotWant = async (req, res) => {
     try {
@@ -196,4 +196,3 @@ export const sendSMSWhenRejectGusetUserRequest = async (req, res) => {
             res.status(500).json({ message: 'Failed to send SMS' }); 
         });
 };
-

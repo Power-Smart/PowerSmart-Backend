@@ -1,9 +1,10 @@
 import Express from "express";
-import { getCustomerOrderRequests,deleteCustomerOrderRequest } from "../controllers/customerOrderRequest.controller.js";
+import { getCustomerOrderRequests,deleteCustomerOrderRequest,addCustomerOrderRequest } from "../controllers/customerOrderRequest.controller.js";
 
 const router = Express.Router();
 
 router.get("/", getCustomerOrderRequests);
+router.post("/addOrder", addCustomerOrderRequest);
 router.get("/deleteOrder/:orderID", deleteCustomerOrderRequest);
 
 
