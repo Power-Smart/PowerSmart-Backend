@@ -52,15 +52,131 @@ export const getDecisions = (decisionAlgoRequestData) => {
         );
     }
 
-    const currentRoomStatusValue = new promise((currentSwitching) => {
+    const currentRoomStatusValue = new promise((arrayDevices) => {
         // return Math.random()*100;
+        let returnVal = 0;
 
+        arrayDevices.forEach((element)=>{
 
+            for(i = 0; i < arrayDevices.length; i++){
+                const deviceType = element.device_type;
+                if(element.switching_status === true){
+                    switch (deviceType) {
+
+                        case "Type1":
+                            returnVal+=0.1;
+                            break;
+                      
+                        case "Type2":
+                            returnVal+=0.2;
+                            break;
+                      
+                        case "Type3":
+                            returnVal+=0.3;
+                            break;
+        
+                        case "Type4":
+                            returnVal+=0.4;
+                            break;
+
+                        case "Type5":
+                            returnVal+=0.5;
+                            break;
+                        
+                        case "Type6":
+                            returnVal+=0.6;
+                            break;
+                        
+                        case "Type7":
+                            returnVal+=0.7;
+                            break;
+        
+                        case "Type8":
+                            returnVal+=0.8;
+                            break;
+                      
+                        case "Type9":
+                            returnVal+=0.9;
+                            break;
+        
+                        case "Type0":
+                            returnVal+=0;
+                            break;
+
+                        default:
+                            returnVal+=Math.random();
+                            break;
+                    }                 
+                }else{
+                    returnVal+=0;
+                } 
+            }
+
+        });
+
+        return (returnVal/arrayDevices.length)*100;
     })
 
-    const tobeRoomStatusValue = new promise(() => {
-        return Math.random()*100;
-    });
+
+    const tobeRoomStatusValue = (roomOccupancy,
+        roomType,
+        roomWindowType,
+        roomSize,
+        placeType,
+        placeCity
+        ) => {
+
+        const occupancyWeight = 0.2;
+        const roomTypeWeight = 0.15;
+        const windowTypeWeight = 0.1;
+        const roomSizeWeight = 0.15;
+        const placeTypeWeight = 0.2;
+        const placeCityWeight = 0.2;
+
+        const occupancyValue = roomOccupancy / 100;
+
+        let roomTypeValue, windowTypeValue, sizeValue, placeTypeValue, placeCityValue;
+
+
+        if (roomType === 'type1') {
+            roomTypeValue = 0.9;
+        } else if (roomType === 'type2') {
+            roomTypeValue = 0.8;
+        } else {
+            roomTypeValue = 0.7;
+        }
+
+        if (roomWindowType === 'window1') {
+            windowTypeValue = 0.9;
+        } else if (roomWindowType === 'window2') {
+            windowTypeValue = 0.8;
+        } else {
+            windowTypeValue = 0.7;
+        }
+
+        if (roomWindowType === 'window1') {
+            windowTypeValue = 0.9;
+        } else if (roomWindowType === 'window2') {
+            windowTypeValue = 0.8;
+        } else {
+            windowTypeValue = 0.7;
+        }
+
+        const roomStatusValue =
+            occupancyValue * occupancyWeight +
+            roomTypeValue * roomTypeWeight +
+            windowTypeValue * windowTypeWeight +
+            sizeValue * roomSizeWeight +
+            placeTypeValue * placeTypeWeight +
+            placeCityValue * placeCityWeight;
+
+        const roomStatus = Math.min(Math.max(roomStatusValue * 100, 1), 100);
+
+        return roomStatus;
+        // return Math.random()*100;
+
+        }
+
 
     let data = [];
 
@@ -94,9 +210,8 @@ export const getDecisions = (decisionAlgoRequestData) => {
 
         arrayDevices.forEach((element)=>{
 
-            const deviceType = element.device_type;
-
             for(i = 0; i < arrayDevices.length; i++){
+                const deviceType = element.device_type;
                 if(arrayStates[i] == 1){
                     switch (deviceType) {
 
@@ -179,7 +294,7 @@ export const getDecisions = (decisionAlgoRequestData) => {
                 uniqueArrays[selectedId] = uniqueArrays[selectedId].map((value) => {
                     const randomBinary = Math.random() < 0.5 ? 1 : 0; 
                     return randomBinary;
-                  });
+                });
             }
         }
 
