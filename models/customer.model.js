@@ -5,7 +5,11 @@ const Customer = db.define("customer", {
     user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement:true
+        autoIncrement: true,
+        references: {
+            model: 'users',
+            key: 'user_id'
+        }
     },
     profile_pic: {
         type: DataTypes.STRING,

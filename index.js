@@ -40,7 +40,7 @@ import "./models/foreignKeys.js";
 import router from "./routes/auth.route.js";
 
 // Database connection
-db.sync({ alter: true })
+db.authenticate()
     .then(() => {
         console.log("\n>> Database connected ! <<\n");
     })

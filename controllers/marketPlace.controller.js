@@ -1,7 +1,8 @@
 import customerOrderRequest from "../models/customerOrderRequest.model.js";
-import MarketPlace from "../models/marketPlace.model.js";
 import Order from "../models/order.model.js";
 import TechSupportPlace from "../models/techSupportPlace.model.js";
+import MarketPlace from "../models/marketplace.model.js";
+import Order from "../models/order.model.js";
 
 
 export const getMarketPlaceItems = async (req, res) => {
