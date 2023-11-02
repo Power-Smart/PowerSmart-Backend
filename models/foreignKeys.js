@@ -6,6 +6,7 @@ import Message from "./message.model.js";
 import Admin from "./admin.model.js";
 import Schedule from "./schedule.model.js";
 import Feedback from "./feedback.model.js";
+import Report from "./report.model.js";
 import Device from "./device.model.js";
 import DeviceSchedule from "./deviceSchedule.model.js";
 // import Achievement from "./achievement.model.js";
@@ -55,6 +56,7 @@ Customer.hasMany(CustomerOrderRequest, { foreignKey: "user_id", as: "customerOrd
 // Define the association between the Chat and User models
 User.belongsTo(Chat, { foreignKey: "sender_id", as: "sender_chat" });
 User.belongsTo(Chat, { foreignKey: "receiver_id", as: "receiver_chat" });
+
 
 // Define the association between the InformUsage and Customer models
 InformUsage.belongsTo(Room, { foreignKey: "room_id", as: "room" });
@@ -154,6 +156,10 @@ Device.hasOne(DeviceSchedule, {
 Feedback.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
 Customer.hasOne(Feedback, { foreignKey: "feedback_id", as: "feedback" });
 
+// Define the association between the Customer and Report models
+Report.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
+Customer.hasOne(Report, { foreignKey: "report_id", as: "report" });
+
 // Define the association between the Schedule and Customer models
 Schedule.belongsTo(Customer, { foreignKey: "user_id", as: "customer" });
 Customer.hasOne(Schedule, { foreignKey: "schedule_id", as: "schedule" });
@@ -227,6 +233,8 @@ TechSupportPlace.belongsTo(TechSupport, { foreignKey: "tech_support_id", as: "te
 TechSupport.hasMany(TechSupportPlace, { foreignKey: "tech_support_id", as: "techSupportPlace" });
 TechSupportPlace.belongsTo(Place, { foreignKey: "place_id", as: "place" });
 Place.hasMany(TechSupportPlace, { foreignKey: "place_id", as: "techSupportPlace" });
+
+
 
 // // Define the association between the GuestUser and User models
 // GuestUser.belongsTo(User, { foreignKey: "user_id", as: "user" });

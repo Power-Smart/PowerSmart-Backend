@@ -1,35 +1,28 @@
 import db from "../models/index.js";
 import { DataTypes } from "sequelize";
 
-const Item = db.define("item", {
-    item_id: {
+const Report = db.define("reports", {
+    report_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    item_code: { 
+    phone_number: {
         type: DataTypes.STRING,
-        allowNull: true,
+        // allowNull: false,
     },
-    name: {
+    email: {
         type: DataTypes.STRING,
-    },
-    price: {
-        type: DataTypes.FLOAT,
+        // allowNull: false,
     },
     description: {
         type: DataTypes.STRING,
-    },
-    quantity: {
-        type: DataTypes.INTEGER,
-    },
-    item_img: {
-        type: DataTypes.STRING,
+        // allowNull: false,
     },
     user_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        // allowNull: false,
     },
 });
 
-export default Item;
+export default Report;

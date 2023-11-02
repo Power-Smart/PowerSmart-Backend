@@ -6,6 +6,7 @@ import placesRouter from "./places.route.js";
 import roomsRouter from "./room.route.js";
 import paymentRouter from "./payment.route.js";
 import deviceRouter from "./device.route.js";
+import reportsRouter from "./report.route.js";
 import techSupportRouter from './techSupport.route.js'
 import techAssignRouter from "./techAssigns.route.js";
 import marketplaceRouter from "./marketPlace.route.js";
@@ -17,6 +18,10 @@ import accessRouter from "./access.route.js";
 import techRatingByCustomersRouter from "./techRatingByCustomers.route.js";
 import complaintHandlingRouter from "./complaintHandling.route.js";
 import customerServiceRequestRouter from "./customerServiceRequest.route.js";
+
+import adminRouter from "./admin.route.js";
+import techSupportAddRouter from "./techSupportAdd.route.js";
+
 import chatRouter from "./chat.route.js";
 import guestUserRouter from './guestUser.route.js'
 import customerRouter from "./customer.route.js";
@@ -31,6 +36,7 @@ router.use("/places", placesRouter);
 router.use("/places/rooms", roomsRouter);
 router.use("/devices", deviceRouter);
 router.use("/payment", paymentRouter);
+router.use("/reports", reportsRouter);
 router.use("/techSupport", techSupportRouter);
 router.use("/assigns", techAssignRouter)
 router.use("/marketplace", marketplaceRouter);
@@ -49,5 +55,7 @@ router.use('/guestUser', guestUserRouter);
 router.use('/customer', customerRouter);
 
 
+router.use('/admin', adminRouter)
+router.use('/techSupportAdd', techSupportAddRouter)
 
 export default router;
