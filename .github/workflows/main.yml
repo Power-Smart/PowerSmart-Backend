@@ -6,7 +6,7 @@ on:
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  REPO_NAME: kavishkasula/web-server
+  REPO_NAME: kavishkasula/test-server
 jobs:
   docker:
     runs-on: ubuntu-latest
